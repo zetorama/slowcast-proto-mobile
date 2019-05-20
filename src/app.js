@@ -4,6 +4,8 @@ import TrackPlayer from 'react-native-track-player'
 
 import Test from './components/test'
 
+import TrackForm from './components/track-form'
+import { PrimaryButton } from './components/common/form'
 
 const STATES = {
   [TrackPlayer.STATE_NONE]: 'STATE_NONE',
@@ -31,7 +33,7 @@ class PlayerInfo extends Component {
       const track = await TrackPlayer.getTrack(data.nextTrack)
       this.setState({ trackTitle: track.title })
       console.log('playback-track-changed', track)
-})
+    })
   }
 
   componentWillUnmount() {
@@ -63,6 +65,15 @@ export default class App extends Component {
   }
 
   renderPage() {
+    const page = '/track/add'
+
+    if (page === '/track/add') {
+      return (
+        <TrackForm>
+          <PrimaryButton title='Add Track' />
+        </TrackForm>
+      )
+    }
 
     // default = home page
     return (
