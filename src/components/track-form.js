@@ -14,7 +14,7 @@ export function TrackForm({ style, track = {}, onTrackUpdate = noop, children })
 
   return (
     <View style={StyleSheet.flatten(styles.container, style)}>
-      <View style={styles.fieldSet}>
+      <View style={styles.formFieldset}>
         <TextField
           label='URL'
           placeholder='Path to mp3'
@@ -58,16 +58,17 @@ export function TrackForm({ style, track = {}, onTrackUpdate = noop, children })
           value={track.artist}
           onChangeText={handleChangeArtist}
         />
-        {/* <TextField
+        <TextField
           label='Chapters'
+          placeholder={['0:00 Hello', '1:22 Discuss subject', '1:25 Joke of the day', '6:66 […]'].join('\n')}
           multiline
           numberOfLines={4}
           editable={false}
-        /> */}
+        />
       </View>
 
       {hasChildren && (
-        <View style={styles.extraSet}>
+        <View style={styles.formChildren}>
           {children}
         </View>
       )}
@@ -92,10 +93,10 @@ export const styles = StyleSheet.create({
   infoInput: {
     textAlign: 'center',
   },
-  fieldSet: {
+  formFieldset: {
     flex: 1,
   },
-  extraSet: {
+  formChildren: {
   },
 })
 

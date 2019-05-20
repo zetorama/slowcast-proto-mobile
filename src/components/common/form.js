@@ -1,5 +1,10 @@
-import React from 'react'
-import { StyleSheet, Text, View, TextInput, Button } from 'react-native'
+import React, { useCallback } from 'react'
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, TouchableNativeFeedback } from 'react-native'
+import FaIcon, { Icons } from 'react-native-fontawesome'
+
+export { Icons }
+
+const noop = () => {}
 
 export function Field({ fieldStyle, label, children }) {
   return (
@@ -18,35 +23,136 @@ export function TextField({ label, fieldStyle, style, ...inputProps }) {
   )
 }
 
-export function PrimaryButton({ style, ...buttonProps }) {
+export function SpinnerField({
+  label,
+  fieldStyle,
+  style,
+  value,
+  step = 1,
+  min = -Infinity,
+  max = Infinity,
+  onPressSpinner = noop,
+  keyboardType = 'numeric',
+  ...inputProps
+}) {
+  const normValue = typeof value === 'number' ? value : 0
+  const handlePressMinus = useCallback(() => onPressSpinner(normValue - step), [onPressSpinner, normValue, step])
+  const handlePressPlus = useCallback(() => onPressSpinner(normValue + step), [onPressSpinner, normValue, step])
+
   return (
-    <Button style={StyleSheet.flatten([styles.primaryButton, style])} {...buttonProps} />
+    <Field label={label} fieldStyle={fieldStyle}>
+      <View style={styles.spinnerRow}>
+        <IconButton
+          style={styles.spinnerButton}
+          iconStyle={styles.spinnerButtonIcon}
+          icon={Icons.minus}
+          onPress={handlePressMinus}
+        />
+        <TextInput
+          style={StyleSheet.flatten([styles.spinnerInput, style])}
+          value={typeof value === 'number' ? String(value) : value}
+          keyboardType={keyboardType}
+          editable={false}
+          {...inputProps}
+        />
+        <IconButton
+          style={styles.spinnerButton}
+          iconStyle={styles.spinnerButtonIcon}
+          icon={Icons.plus}
+          onPress={handlePressPlus}
+        />
+      </View>
+    </Field>
+  )
+}
+
+export function IconButton({ style, iconStyle, icon, disabled, ...touchableProps }) {
+  return (
+    <TouchableNativeFeedback disabled={disabled} {...touchableProps}>
+      <View style={StyleSheet.flatten([styles.iconButton, style])}>
+        <FaIcon style={[disabled && styles.disabledButtonText, iconStyle]}>{icon}</FaIcon>
+      </View>
+    </TouchableNativeFeedback>
+  )
+}
+
+export function PrimaryButton({ style, titleStyle, title, disabled, ...touchableProps }) {
+  return (
+    <TouchableNativeFeedback disabled={disabled} {...touchableProps}>
+      <View style={StyleSheet.flatten([styles.primaryButton, disabled && styles.disabledButton, style])}>
+        <Text style={StyleSheet.flatten([styles.primaryButtonText, disabled && styles.disabledButtonText, titleStyle])}>
+          {title}
+        </Text>
+      </View>
+    </TouchableNativeFeedback>
   )
 }
 
 export const styles = StyleSheet.create({
   label: {
-    color: '#aaa',
+    marginBottom: 3,
+    fontWeight: 'bold',
+    color: '#29648a',
   },
   field: {
     alignItems: 'stretch',
-    marginBottom: 5,
+    marginBottom: 10,
+  },
+  spinnerRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'stretch',
+  },
+  spinnerInput: {
+    flex: 2,
+    padding: 3,
+    borderRadius: 2,
+    backgroundColor: '#f0ebf4',
+    textAlign: 'center',
+  },
+  spinnerButtonIcon: {
+    color: '#f0ebf4',
+  },
+  spinnerButton: {
+    flex: 1,
+    padding: 3,
+    borderRadius: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#29648a',
   },
   textInput: {
     padding: 10,
-    borderWidth: 1,
     borderRadius: 2,
-    borderColor: '#aaa',
-    backgroundColor: '#fff',
+    backgroundColor: '#f0ebf4',
+  },
+  iconButton: {
   },
   primaryButton: {
-    // NOTE: these styles don't make sense for `<Button/>` component
-    // color: 'blue'
+    padding: 10,
+    paddingLeft: 20,
+    paddingRight: 20,
+    borderRadius: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#2e9cca',
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  disabledButton: {
+    backgroundColor: '#464866',
+  },
+  disabledButtonText: {
+    color: '#aaabbb',
   },
 })
 
 export default {
   Field,
+  SpinnerField,
   TextField,
+  IconButton,
   PrimaryButton,
 }

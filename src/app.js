@@ -1,109 +1,67 @@
-import React, {Component} from 'react'
-import {Platform, StyleSheet, Text, View} from 'react-native'
-import TrackPlayer from 'react-native-track-player'
+import React, { Component, useState } from 'react'
+import { StyleSheet, Text, View, Alert } from 'react-native'
 
-import Test from './components/test'
-
+import PlayerScreen from './components/player-screen'
+import TrackList from './components/track-list'
 import TrackForm from './components/track-form'
 import { PrimaryButton } from './components/common/form'
 
-const STATES = {
-  [TrackPlayer.STATE_NONE]: 'STATE_NONE',
-  [TrackPlayer.STATE_READY]: 'STATE_READY',
-  [TrackPlayer.STATE_PLAYING]: 'STATE_PLAYING',
-  [TrackPlayer.STATE_PAUSED]: 'STATE_PAUSED',
-  [TrackPlayer.STATE_STOPPED]: 'STATE_STOPPED',
-  [TrackPlayer.STATE_BUFFERING]: 'STATE_BUFFERING',
+const tracks = [
+  { id: 1, artist: 'Foo bar', title: 'Hello World' },
+  { id: 2, artist: 'AAA', title: 'aaa' },
+  { id: 3, artist: 'ZZZ', title: 'yo!' },
+  { id: 4, artist: 'AAA', title: 'bbb' },
+]
+
+const PAGE = {
+  DEFAULT: '/',
+  TRACK_LIST: '/tracks',
+  TRACK_ADD: '/tracks/add',
 }
 
-class PlayerInfo extends Component {
-  state = {}
+export function App(props) {
+  return (
+    <View style={styles.container}>
+      <AppPage {...props} />
+    </View>
+  )
+}
 
-  componentDidMount() {
-    // Adds an event handler for the playback-track-changed event
-    this._onPlayerStateChange = TrackPlayer.addEventListener('playback-state', async (data) => {
+export function AppPage(props) {
+  const [page, setPage] = useState('/')
 
-      const playerState = await TrackPlayer.getState()
-      this.setState({ playerState })
-      console.log('playback-state', playerState)
-    })
-
-    this._onTrackChange = TrackPlayer.addEventListener('playback-track-changed', async (data) => {
-
-      const track = await TrackPlayer.getTrack(data.nextTrack)
-      this.setState({ trackTitle: track.title })
-      console.log('playback-track-changed', track)
-    })
-  }
-
-  componentWillUnmount() {
-    // Removes the event handler
-    this._onPlayerStateChange.remove()
-    this._onTrackChange.remove()
-  }
-
-  render() {
-    const displayState = this.state.playerState == null ? 'N/A' : STATES[this.state.playerState]
-
+  if (page === PAGE.TRACK_LIST) {
     return (
-      <>
-        <Text>{this.state.playerState} = {displayState}</Text>
-        <Text>{this.state.trackTitle}</Text>
-      </>
+      <TrackList tracks={tracks}>
+        <PrimaryButton title='Add New Track' onPress={() => setPage(PAGE.TRACK_ADD)} />
+      </TrackList>
+    )
+  }
+  else if (page === PAGE.TRACK_ADD) {
+    return (
+      <TrackForm>
+        <PrimaryButton title='Save Track' onPress={() => setPage(PAGE.DEFAULT)} />
+      </TrackForm>
     )
   }
 
+  // default = home page
+  return (
+    <PlayerScreen
+      track={tracks[0]}
+      onPressTrackPicker={() => setPage(PAGE.TRACK_LIST)}
+    />
+  )
 }
 
-export default class App extends Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        {this.renderPage()}
-      </View>
-    )
-  }
-
-  renderPage() {
-    const page = '/track/add'
-
-    if (page === '/track/add') {
-      return (
-        <TrackForm>
-          <PrimaryButton title='Add Track' />
-        </TrackForm>
-      )
-    }
-
-    // default = home page
-    return (
-      <>
-        <Test style={{ color: 'red' }} />
-        <Text style={styles.welcome}>Welcome to React Native!</Text>
-
-        <PlayerInfo />
-      </>
-    )
-  }
-}
-
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'stretch',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: '#25274d',
     padding: 20,
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-    color: 'red',
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
 })
+
+export default App
