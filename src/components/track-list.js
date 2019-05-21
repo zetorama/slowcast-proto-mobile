@@ -45,8 +45,8 @@ export function TrackList({
             hideArtist={true}
             track={track}
             icon={icon}
-            onPressIcon={() => onPressIcon(track.id)}
-            onPressTitle={() => onPressTitle(track.id)}
+            onPressIcon={() => onPressIcon(track)}
+            onPressTitle={() => onPressTitle(track)}
           />
         )}
         renderSectionHeader={({ section: { title } }) => (

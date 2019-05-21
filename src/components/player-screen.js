@@ -83,7 +83,7 @@ export function PlayerSettings({ style, settings, onChangeSettings = noop }) {
           fieldStyle={styles.rowField}
           style={styles.settingInput}
           label='TALK, min'
-          value={5}
+          value={settings.talkTime}
           min={0}
           onPressSpinner={handleChangeTalkTime}
         />
@@ -91,7 +91,7 @@ export function PlayerSettings({ style, settings, onChangeSettings = noop }) {
           fieldStyle={styles.rowField}
           style={styles.settingInput}
           label='HOLD, min'
-          value={10}
+          value={settings.holdTime}
           min={0}
           onPressSpinner={handleChangeHoldTime}
         />
@@ -99,7 +99,7 @@ export function PlayerSettings({ style, settings, onChangeSettings = noop }) {
           fieldStyle={styles.rowField}
           style={styles.settingInput}
           label='FADE, sec'
-          value={10}
+          value={settings.fadeTime}
           min={0}
           step={5}
           onPressSpinner={handleChangeFadeTime}

@@ -6,9 +6,9 @@ import { TextField } from './common/form'
 const noop = () => { }
 
 export function TrackForm({ style, track = {}, onTrackUpdate = noop, children }) {
-  const handleChangeUrl = useCallback(value => onTrackUpdate('url', value), [onTrackUpdate])
-  const handleChangeTitle = useCallback(value => onTrackUpdate('title', value), [onTrackUpdate])
-  const handleChangeArtist = useCallback(value => onTrackUpdate('artist', value), [onTrackUpdate])
+  const handleChangeUrl = useCallback(url => onTrackUpdate({ url }), [onTrackUpdate])
+  const handleChangeTitle = useCallback(title => onTrackUpdate({ title }), [onTrackUpdate])
+  const handleChangeArtist = useCallback(artist => onTrackUpdate({ artist }), [onTrackUpdate])
 
   const hasChildren = Boolean(Array.isArray(children) ? children.length : children)
 
@@ -18,44 +18,44 @@ export function TrackForm({ style, track = {}, onTrackUpdate = noop, children })
         <TextField
           label='URL'
           placeholder='Path to mp3'
-          value={track.url}
+          value={String(track.url || '')}
           onChangeText={handleChangeUrl}
         />
 
-        <View style={styles.row}>
+        {/* <View style={styles.row}>
           <TextField
             fieldStyle={styles.rowField}
             style={styles.infoInput}
             label='ID'
             editable={false}
-            value={track.id || '—'}
+            value={String(track.id || '—')}
           />
           <TextField
             fieldStyle={styles.rowField}
             style={styles.infoInput}
             label='Size'
             editable={false}
-            value={track.size || '—'}
+            value={String(track.size || '—')}
           />
           <TextField
             fieldStyle={styles.rowField}
             style={styles.infoInput}
             label='Time'
             editable={false}
-            value={track.time || '—'}
+            value={String(track.duration || '—')}
           />
-        </View>
+        </View> */}
 
         <TextField
           label='Title'
           placeholder='Episode #42: The meaning of life'
-          value={track.title}
+          value={String(track.title || '')}
           onChangeText={handleChangeTitle}
         />
         <TextField
           label='Artist'
           placeholder='Podcast about everything'
-          value={track.artist}
+          value={String(track.artist || '')}
           onChangeText={handleChangeArtist}
         />
         <TextField
