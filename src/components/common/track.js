@@ -46,7 +46,7 @@ export const styles = StyleSheet.create({
     color: '#29648a',
   },
   cardTitle: {
-    fontSize: 36,
+    fontSize: 28,
     color: '#2e9cca',
   },
   cardIconButton: {
@@ -56,7 +56,7 @@ export const styles = StyleSheet.create({
     padding: 5,
   },
   cardIcon: {
-    fontSize: 30,
+    fontSize: 20,
     color: '#2e9cca',
   },
 })

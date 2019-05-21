@@ -1,10 +1,10 @@
 import React from 'react'
 import { Provider } from 'react-redux'
 
-import initStore from './store'
+import getStore from './store'
 import AppIndex from './pages'
 
-export const store = initStore()
+const store = getStore()
 
 export function App() {
   return (

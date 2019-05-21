@@ -5,6 +5,17 @@ import routerReducer from './router'
 import tracksReducer from './tracks'
 import playerReducer from './player'
 
+let store
+
+export function getStore() {
+  if (!store) {
+    store = createStore(getReducer(), getDefaults())
+  }
+
+  return store
+}
+
+
 export function getReducer() {
   // TODO: might be better to re-think store structure and use `combineReducers`
   const reducers = [
@@ -43,13 +54,11 @@ export function getDefaults() {
     playingTrack: undefined,
 
     // tracks
-    tracks: [],
+    // tracks: [],
+    tracks: require('./__tracks__.json'),
     editingTrack: undefined,
   }
 }
 
-export function initStore(initial = getDefaults()) {
-  return createStore(getReducer(), initial)
-}
 
-export default initStore
+export default getStore

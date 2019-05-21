@@ -1,5 +1,5 @@
 import TrackPlayer from 'react-native-track-player'
-import playbackService from './playback-service'
+import { subscribeToPlayback } from './playback-service'
 
 const track = {
   id: 1,
@@ -12,7 +12,8 @@ const track = {
 }
 
 export default async () => {
-  TrackPlayer.registerPlaybackService(() => playbackService)
+  TrackPlayer.registerPlaybackService(() => subscribeToPlayback)
+  TrackPlayer.setupPlayer()
 
   // try {
 

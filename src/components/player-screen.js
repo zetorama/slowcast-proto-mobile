@@ -13,11 +13,10 @@ export function PlayerScreen({
   progress = {},
   settings = {},
   isPlaying = false,
-  onPressTrackPicker = noop,
-  onChangeSettings = noop,
+  onPressTrackPicker,
+  onChangeSettings,
+  onPressPlay,
 }) {
-  const handlePressTrackPicker = useCallback(() => onPressTrackPicker(), [onPressTrackPicker])
-  const handleChangeSettings = useCallback((settings) => onChangeSettings(settings), [onChangeSettings, settings])
 
   return (
     <View style={StyleSheet.flatten(styles.playerScreen, style)}>
@@ -25,32 +24,40 @@ export function PlayerScreen({
         style={styles.screenTrack}
         track={track}
         icon={Icons.fileImport}
-        onPressIcon={handlePressTrackPicker}
+        onPressIcon={onPressTrackPicker}
       />
 
       <PlayerSettings
         style={styles.screenSettings}
         settings={settings}
-        onChangeSettings={handleChangeSettings}
+        onChangeSettings={onChangeSettings}
       />
 
       <PlayerProgress
         style={styles.screenProgress}
+        disabled={!Boolean(track.url)}
         progress={progress}
         isPlaying={isPlaying}
+        onPressPlay={onPressPlay}
       />
 
     </View>
   )
 }
 
-export function PlayerProgress({ style, isPlaying, progress }) {
-  const playIcon = isPlaying ? Icons.PauseCircle : Icons.playCircle
+export function PlayerProgress({
+  style,
+  disabled,
+  isPlaying,
+  progress,
+  onPressPlay,
+}) {
+  const playIcon = isPlaying ? Icons.pauseCircle : Icons.playCircle
   const { duration, position = 0 } = progress
 
   return (
     <View style={StyleSheet.flatten([styles.playerProgress, style])}>
-      {duration && (
+      {!disabled && duration && (
         <View style={styles.progressBar}>
           <Text style={styles.progressLabel}>
             {position}/{duration} s
@@ -58,7 +65,12 @@ export function PlayerProgress({ style, isPlaying, progress }) {
         </View>
       )}
       <View style={styles.controlsBar}>
-        <IconButton iconStyle={styles.playIcon} icon={playIcon} />
+        <IconButton
+          icon={playIcon}
+          disabled={disabled}
+          iconStyle={!disabled ? styles.playIcon : styles.playIconDisabled}
+          onPress={onPressPlay}
+        />
       </View>
 
     </View>
@@ -165,6 +177,10 @@ export const styles = StyleSheet.create({
   playIcon: {
     fontSize: 72,
     color: '#2e9cca',
+  },
+  playIconDisabled: {
+    fontSize: 72,
+    color: '#464866',
   },
   progressLabel: {
     fontSize: 16,

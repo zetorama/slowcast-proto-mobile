@@ -72,7 +72,7 @@ export const styles = StyleSheet.create({
     padding: 10,
     minHeight: 60,
     margin: -20,
-    marginBottom: 0,
+    marginBottom: 20,
   },
   headerIcon: {
     justifyContent: 'center',

@@ -3,30 +3,34 @@ import { connect } from 'react-redux'
 
 import { PAGE_TRACKS_ROOT } from '../routes'
 import { gotoPage } from '../store/router'
-import { updateSettings } from '../store/player'
+import { updateSettings, togglePlay } from '../store/player'
 import PlayerScreen from '../components/player-screen'
 
-export function Home({ playingTrack, playingSettings, gotoPage, updateSettings }) {
+export function Home({ isPlaying, playingTrack, playingSettings, gotoPage, togglePlay, updateSettings }) {
   const handlePressTrackPicker = useCallback(() => gotoPage(PAGE_TRACKS_ROOT), [gotoPage, PAGE_TRACKS_ROOT])
 
   return (
     <PlayerScreen
+      isPlaying={isPlaying}
       track={playingTrack}
       settings={playingSettings}
       onPressTrackPicker={handlePressTrackPicker}
       onChangeSettings={updateSettings}
+      onPressPlay={togglePlay}
     />
   )
 }
 
-const mapStateToProps = ({ playingTrack, playingSettings }) => ({
+const mapStateToProps = ({ isPlaying, playingTrack, playingSettings }) => ({
+  isPlaying,
   playingTrack,
   playingSettings,
 })
 
 const mapDispatchToProps = {
   gotoPage,
-  updateSettings
+  updateSettings,
+  togglePlay,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home)
