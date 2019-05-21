@@ -4,6 +4,7 @@ import { PAGE_ROOT } from '../routes'
 
 // Action types
 export const TRACK_PICK = 'slowcast/player/TRACK_PICK'
+export const SETTINGS_UPDATE = 'slowcast/player/SETTINGS_UPDATE'
 
 // Reducer
 export default function reducer(state, action) {
@@ -20,6 +21,17 @@ export default function reducer(state, action) {
       }
     }
 
+    case SETTINGS_UPDATE: {
+      return {
+        ...state,
+
+        playingSettings: {
+          ...state.playingSettings,
+          ...payload.settings,
+        }
+      }
+    }
+
     default:
       return state
   }
@@ -29,4 +41,9 @@ export default function reducer(state, action) {
 export const pickTrack = (track) => ({
   type: TRACK_PICK,
   payload: { track },
+})
+
+export const updateSettings = (settings) => ({
+  type: SETTINGS_UPDATE,
+  payload: { settings },
 })

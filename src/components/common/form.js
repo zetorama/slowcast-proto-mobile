@@ -35,9 +35,16 @@ export function SpinnerField({
   keyboardType = 'numeric',
   ...inputProps
 }) {
-  const normValue = typeof value === 'number' ? value : 0
-  const handlePressMinus = useCallback(() => onPressSpinner(normValue - step), [onPressSpinner, normValue, step])
-  const handlePressPlus = useCallback(() => onPressSpinner(normValue + step), [onPressSpinner, normValue, step])
+  const decValue = typeof value === 'number' && value - step >= min ? value - step : null
+  const incValue = typeof value === 'number' && value + step <= max ? value + step : null
+  const handlePressMinus = useCallback(
+    () => decValue != null && onPressSpinner(decValue),
+    [onPressSpinner, decValue],
+  )
+  const handlePressPlus = useCallback(
+    () => incValue != null && onPressSpinner(incValue),
+    [onPressSpinner, incValue],
+  )
 
   return (
     <Field label={label} fieldStyle={fieldStyle}>
@@ -50,7 +57,7 @@ export function SpinnerField({
         />
         <TextInput
           style={StyleSheet.flatten([styles.spinnerInput, style])}
-          value={typeof value === 'number' ? String(value) : value}
+          value={String(value)}
           keyboardType={keyboardType}
           editable={false}
           {...inputProps}

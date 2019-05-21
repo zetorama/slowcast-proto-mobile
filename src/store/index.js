@@ -26,7 +26,7 @@ export function getDefaults() {
     isPlaying: false,
     isTalking: false,
     playingSettings: {
-      currentMode: 'timings',
+      // currentMode: 'timings',
       talkTime: 10,
       holdTime: 10,
       fadeTime: 10,

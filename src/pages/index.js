@@ -13,7 +13,15 @@ import Home from './home'
 import TracksList from './tracks-list'
 import TracksForm from './tracks-form'
 
-export function Index({ currentPage, editingTrack, goHome, goBack, pickTrack, deleteTrack, ...props }) {
+export function Index({
+  currentPage,
+  editingTrack,
+  goHome,
+  goBack,
+  pickTrack,
+  deleteTrack,
+  ...props
+}) {
   const handleDelete = useCallback(
     () => editingTrack && confirmDelete(editingTrack, deleteTrack),
     [confirmDelete, editingTrack, deleteTrack],
