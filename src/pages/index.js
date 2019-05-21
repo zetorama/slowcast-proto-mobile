@@ -5,6 +5,7 @@ import { Text, Alert } from 'react-native'
 import * as route from '../routes'
 import { goBack, goHome } from '../store/router'
 import { deleteTrack } from '../store/tracks'
+import { pickTrack } from '../store/player'
 
 // TODO: use AppLayout in every component itself
 import AppLayout, { Icons } from '../components/app-layout'
@@ -12,7 +13,7 @@ import Home from './home'
 import TracksList from './tracks-list'
 import TracksForm from './tracks-form'
 
-export function Index({ currentPage, editingTrack, goHome, goBack, deleteTrack, ...props }) {
+export function Index({ currentPage, editingTrack, goHome, goBack, pickTrack, deleteTrack, ...props }) {
   const handleDelete = useCallback(
     () => editingTrack && confirmDelete(editingTrack, deleteTrack),
     [confirmDelete, editingTrack, deleteTrack],
@@ -29,7 +30,7 @@ export function Index({ currentPage, editingTrack, goHome, goBack, deleteTrack, 
     case route.PAGE_TRACKS_ROOT:
       return (
         <AppLayout title='Tracks List' iconPrimary={Icons.arrowLeft} onPressPrimary={goHome}>
-          <TracksList {...props} />
+          <TracksList onPressTrackTitle={pickTrack} {...props} />
         </AppLayout>
       )
 
@@ -85,6 +86,7 @@ const mapStateToProps = ({ currentPage, prevPage, editingTrack }) => ({
   editingTrack,
 })
 const mapDispatchToProps = {
+  pickTrack,
   deleteTrack,
   goHome,
   goBack,

@@ -3,13 +3,14 @@ import { createStore } from 'redux'
 import { PAGE_ROOT } from '../routes'
 import routerReducer from './router'
 import tracksReducer from './tracks'
-// import playerReducer from './player'
+import playerReducer from './player'
 
 export function getReducer() {
   // TODO: might be better to re-think store structure and use `combineReducers`
   const reducers = [
     routerReducer,
     tracksReducer,
+    playerReducer,
   ]
 
   return (state, action) => reducers.reduce((state, fn) => fn(state, action), state)
