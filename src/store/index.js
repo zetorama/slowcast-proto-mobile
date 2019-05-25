@@ -34,8 +34,10 @@ export function getDefaults() {
     prevPage: undefined,
 
     // player
+    isLoading: false,
     isPlaying: false,
     isTalking: false,
+    DEBUG_playerState: 'n/a',
     playingSettings: {
       // currentMode: 'timings',
       talkTime: 10,

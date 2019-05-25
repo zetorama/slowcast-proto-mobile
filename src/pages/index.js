@@ -5,7 +5,7 @@ import { Text, Alert } from 'react-native'
 import * as route from '../routes'
 import { goBack, goHome } from '../store/router'
 import { deleteTrack } from '../store/tracks'
-import { pickTrack } from '../store/player'
+import { selectTrack } from '../store/player'
 
 // TODO: use AppLayout in every component itself
 import AppLayout, { Icons } from '../components/app-layout'
@@ -14,11 +14,12 @@ import TracksList from './tracks-list'
 import TracksForm from './tracks-form'
 
 export function Index({
+  DEBUG_playerState,
   currentPage,
   editingTrack,
   goHome,
   goBack,
-  pickTrack,
+  selectTrack,
   deleteTrack,
   ...props
 }) {
@@ -31,6 +32,8 @@ export function Index({
     case route.PAGE_ROOT:
       return (
         <AppLayout title='SlowCast Proto'>
+
+          <Text style={{ color: 'red' }}>{`player-state: ${DEBUG_playerState}`}</Text>
           <Home {...props} />
         </AppLayout>
       )
@@ -38,7 +41,7 @@ export function Index({
     case route.PAGE_TRACKS_ROOT:
       return (
         <AppLayout title='Tracks List' iconPrimary={Icons.arrowLeft} onPressPrimary={goHome}>
-          <TracksList onPressTrackTitle={pickTrack} {...props} />
+          <TracksList onPressTrackTitle={selectTrack} {...props} />
         </AppLayout>
       )
 
@@ -88,13 +91,19 @@ const confirmDelete = (track, onConfirm) => Alert.alert(
   { cancelable: false },
 )
 
-const mapStateToProps = ({ currentPage, prevPage, editingTrack }) => ({
+const mapStateToProps = ({
+  DEBUG_playerState,
+  currentPage,
+  prevPage,
+  editingTrack,
+}) => ({
+  DEBUG_playerState,
   currentPage,
   prevPage,
   editingTrack,
 })
 const mapDispatchToProps = {
-  pickTrack,
+  selectTrack,
   deleteTrack,
   goHome,
   goBack,

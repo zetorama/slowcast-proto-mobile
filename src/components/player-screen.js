@@ -13,6 +13,7 @@ export function PlayerScreen({
   progress = {},
   settings = {},
   isPlaying = false,
+  isLoading = false,
   onPressTrackPicker,
   onChangeSettings,
   onPressPlay,
@@ -38,6 +39,7 @@ export function PlayerScreen({
         disabled={!Boolean(track.url)}
         progress={progress}
         isPlaying={isPlaying}
+        isLoading={isLoading}
         onPressPlay={onPressPlay}
       />
 
@@ -48,8 +50,9 @@ export function PlayerScreen({
 export function PlayerProgress({
   style,
   disabled,
+  isLoading,
   isPlaying,
-  progress,
+  progress = {},
   onPressPlay,
 }) {
   const playIcon = isPlaying ? Icons.pauseCircle : Icons.playCircle
@@ -57,13 +60,21 @@ export function PlayerProgress({
 
   return (
     <View style={StyleSheet.flatten([styles.playerProgress, style])}>
-      {!disabled && duration && (
-        <View style={styles.progressBar}>
+      <View style={styles.progressBar}>
+
+        {!disabled && duration && (
           <Text style={styles.progressLabel}>
             {position}/{duration} s
           </Text>
-        </View>
-      )}
+        )}
+
+        {isLoading && (
+          <Text style={styles.progressLabel}>
+            Loading…
+          </Text>
+        )}
+
+      </View>
       <View style={styles.controlsBar}>
         <IconButton
           icon={playIcon}
@@ -167,9 +178,15 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'stretch',
     justifyContent: 'space-around',
+    minHeight: 60,
+    marginLeft: -20,
+    marginRight: -20,
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#464866',
   },
   controlsBar: {
-    paddingTop: 10,
+    paddingTop: 20,
     flexDirection: 'row',
     alignItems: 'stretch',
     justifyContent: 'space-around',
