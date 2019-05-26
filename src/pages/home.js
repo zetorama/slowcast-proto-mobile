@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { PAGE_TRACKS_ROOT } from '../routes'
 import { gotoPage } from '../store/nav'
 import { updateSettings, togglePlayPause } from '../store/player'
+import AppLayout, { Icons } from '../components/app-layout'
 import PlayerScreen from '../components/player-screen'
 
 export function Home({
@@ -18,15 +19,17 @@ export function Home({
   const handlePressTrackPicker = useCallback(() => gotoPage(PAGE_TRACKS_ROOT), [gotoPage, PAGE_TRACKS_ROOT])
 
   return (
-    <PlayerScreen
-      isPlaying={isPlaying}
-      isBuffering={isBuffering}
-      track={playingTrack}
-      settings={playingSettings}
-      onPressTrackPicker={handlePressTrackPicker}
-      onChangeSettings={updateSettings}
-      onPressPlay={togglePlayPause}
-    />
+    <AppLayout title='SlowCast Proto'>
+      <PlayerScreen
+        isPlaying={isPlaying}
+        isBuffering={isBuffering}
+        track={playingTrack}
+        settings={playingSettings}
+        onPressTrackPicker={handlePressTrackPicker}
+        onChangeSettings={updateSettings}
+        onPressPlay={togglePlayPause}
+        />
+    </AppLayout>
   )
 }
 

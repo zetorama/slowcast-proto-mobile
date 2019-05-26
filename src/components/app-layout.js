@@ -8,6 +8,7 @@ export { Icons }
 export function AppLayout({
   style,
   headerStyle,
+  contentStyle,
   title,
   titleTextStyle,
   onPressTitle,
@@ -51,7 +52,9 @@ export function AppLayout({
         </View>
       )}
 
-      {children}
+      <View style={StyleSheet.flatten([styles.content, contentStyle])}>
+        {children}
+      </View>
     </View>
   )
 }
@@ -94,6 +97,11 @@ export const styles = StyleSheet.create({
     color: '#f0ebf4',
     textAlign: 'center',
   },
+  content: {
+    flex: 1,
+    // justifyContent: 'center',
+    alignItems: 'stretch',
+  }
 })
 
 
