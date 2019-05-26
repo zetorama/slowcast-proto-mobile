@@ -1,17 +1,25 @@
 import React, { useCallback } from 'react'
-import { StyleSheet, View, Text, Alert } from 'react-native'
+import { StyleSheet, View, Text } from 'react-native'
 
 import { PrimaryButton, IconButton, Icons, SpinnerField } from './common/form'
 import { TrackCard } from './common/track'
 
 
 const noop = () => { }
+const formatTime = (duration) => {
+  if (!duration) return `0″`
+
+  const min = Math.floor(duration / 60)
+  const sec = parseInt(duration) % 60
+  return min ? `${min}′ ${sec}″` : `${sec}″`
+}
 
 export function PlayerScreen({
   style,
   track = {},
   progress = {},
   settings = {},
+  isPlayerOk = false,
   isPlaying = false,
   isBuffering = false,
   onPressTrackPicker,
@@ -36,8 +44,9 @@ export function PlayerScreen({
 
       <PlayerProgress
         style={styles.screenProgress}
-        disabled={!Boolean(track.url)}
+        disabled={!isPlayerOk || !track.url}
         progress={progress}
+        isPlayerOk={isPlayerOk}
         isPlaying={isPlaying}
         isBuffering={isBuffering}
         onPressPlay={onPressPlay}
@@ -50,32 +59,41 @@ export function PlayerScreen({
 export function PlayerProgress({
   style,
   disabled,
+  isPlayerOk,
   isBuffering,
   isPlaying,
-  progress = {},
+  progress,
   onPressPlay,
 }) {
   const playIcon = isPlaying ? Icons.pauseCircle : Icons.playCircle
-  const { duration, position = 0 } = progress
+  const { duration, position = 0 } = progress || {}
+  const diskStyle = isBuffering ? styles.diskBuffering : !isPlayerOk ? styles.diskNotOk : ''
+  const bufferPercents = duration ? position / duration * 100 : 0
+  const progressPercents = duration ? position / duration * 100 : 0
 
   return (
     <View style={StyleSheet.flatten([styles.playerProgress, style])}>
-      <View style={styles.progressBar}>
+      <View style={styles.infoPanel}>
 
-        {!disabled && duration && (
-          <Text style={styles.progressLabel}>
-            {position}/{duration} s
-          </Text>
-        )}
-
-        {isBuffering && (
+        {isBuffering ? (
           <Text style={styles.progressLabel}>
             Buffering…
+          </Text>
+        ) : Boolean(!disabled && duration) && (
+          <Text style={styles.progressLabel}>
+            {formatTime(position)} / {formatTime(duration)}
           </Text>
         )}
 
       </View>
-      <View style={styles.controlsBar}>
+      <View style={styles.progressBar}>
+        <View style={StyleSheet.flatten([styles.progressBuffered, { width: `${bufferPercents}%` }])} />
+
+        {Boolean(!disabled && duration) && (
+          <View style={StyleSheet.flatten([styles.progressDisk, diskStyle, { left: `${progressPercents}%` }])} />
+        )}
+      </View>
+      <View style={styles.controlsPanel}>
         <IconButton
           icon={playIcon}
           disabled={disabled}
@@ -175,6 +193,32 @@ export const styles = StyleSheet.create({
   playerProgress: {
   },
   progressBar: {
+    alignItems: 'flex-start',
+    height: 2,
+    marginLeft: -20,
+    marginRight: -20,
+    backgroundColor: '#464866',
+  },
+  progressBuffered: {
+    height: 2,
+    backgroundColor: '#29648a',
+  },
+  progressDisk: {
+    position: 'absolute',
+    top: -3,
+    left: '0%', // controlled by component
+    width: 9,
+    height: 9,
+    backgroundColor: '#2e9cca',
+    borderRadius: 6,
+  },
+  diskBuffering: {
+    backgroundColor: '#29648a',
+  },
+  diskNotOk: {
+    backgroundColor: '#464866',
+  },
+  infoPanel: {
     flexDirection: 'row',
     alignItems: 'stretch',
     justifyContent: 'space-around',
@@ -182,10 +226,8 @@ export const styles = StyleSheet.create({
     marginLeft: -20,
     marginRight: -20,
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#464866',
   },
-  controlsBar: {
+  controlsPanel: {
     paddingTop: 20,
     flexDirection: 'row',
     alignItems: 'stretch',

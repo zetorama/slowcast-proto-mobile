@@ -11,19 +11,16 @@ import {
 import {
   setReady,
   setPlaying,
-  setBuffering,
+  setPlayerState,
+  updateTrackProgress,
 } from './store/player'
 
 import getStore from './store'
-const getPlayerState = () => getStore().getState().player || {}
 
-const restorePlayer = () => {
-  const { dispatch } = getStore()
-  dispatch(setReady(true))
+const PROGRESS_UPDATE_EVERY_MS = 999
 
-  return preparePlayer()
-}
-
+// background service for TrackPlayer
+// subscribing here to variis playback updates, and tell store about them
 export async function subscribeToPlayback() {
   const { dispatch } = getStore()
 
@@ -39,7 +36,12 @@ export async function subscribeToPlayback() {
 
     console.log('!!!! playback-state !!!', label[state], args)
 
-    dispatch(setBuffering(state === TrackPlayer.STATE_BUFFERING))
+    dispatch(setPlayerState(state))
+  })
+
+  TrackPlayer.addEventListener('remote-play', async (...args) => {
+    console.log('!!!! remote-play !!!', args)
+    dispatch(setPlaying(true))
   })
 
   TrackPlayer.addEventListener('remote-play', async (...args) => {
@@ -58,6 +60,8 @@ export async function subscribeToPlayback() {
   })
 }
 
+// basically, a player's operator
+// converts declarative store updates into imperative player calls
 export function subscribeToStore() {
   const { dispatch, subscribe } = getStore()
   let {
@@ -87,9 +91,46 @@ export function subscribeToStore() {
       if (!isPlayerAlive()) restorePlayer()
 
       togglePlayPause({ isPlaying })
+      toggleProgressWatcher(isPlaying)
     }
 
   })
 }
 
 export default subscribeToPlayback
+
+// helpers
+
+const getPlayerState = () => getStore().getState().player || {}
+
+const restorePlayer = () => {
+  const { dispatch } = getStore()
+  dispatch(setReady(true))
+
+  return preparePlayer()
+}
+
+const putProgressToStore = async () => {
+  const { dispatch } = getStore()
+
+  const [duration, position, bufferedPosition] = await Promise.all([
+    await TrackPlayer.getDuration(),
+    await TrackPlayer.getPosition(),
+    await TrackPlayer.getBufferedPosition(),
+  ])
+
+  dispatch(updateTrackProgress({ duration, position, bufferedPosition }))
+}
+
+let progressWatcherTid
+const toggleProgressWatcher = (isOn) => {
+  if (!isOn && progressWatcherTid) {
+    clearInterval(progressWatcherTid)
+    progressWatcherTid = null
+  }
+
+  if (isOn && !progressWatcherTid) {
+    progressWatcherTid = setInterval(putProgressToStore, PROGRESS_UPDATE_EVERY_MS)
+    putProgressToStore()
+  }
+}
