@@ -3,8 +3,8 @@ import { connect } from 'react-redux'
 import { Text, Alert } from 'react-native'
 
 import * as route from '../routes'
-import { goBack, goHome } from '../store/router'
-import { deleteTrack } from '../store/tracks'
+import { goBack, goHome } from '../store/nav'
+import { deleteTrack } from '../store/library'
 import { selectTrack } from '../store/player'
 
 // TODO: use AppLayout in every component itself
@@ -14,7 +14,6 @@ import TracksList from './tracks-list'
 import TracksForm from './tracks-form'
 
 export function Index({
-  DEBUG_playerState,
   currentPage,
   editingTrack,
   goHome,
@@ -32,8 +31,6 @@ export function Index({
     case route.PAGE_ROOT:
       return (
         <AppLayout title='SlowCast Proto'>
-
-          <Text style={{ color: 'red' }}>{`player-state: ${DEBUG_playerState}`}</Text>
           <Home {...props} />
         </AppLayout>
       )
@@ -92,12 +89,14 @@ const confirmDelete = (track, onConfirm) => Alert.alert(
 )
 
 const mapStateToProps = ({
-  DEBUG_playerState,
-  currentPage,
-  prevPage,
-  editingTrack,
+  nav: {
+    currentPage,
+    prevPage,
+  },
+  library: {
+    editingTrack,
+  },
 }) => ({
-  DEBUG_playerState,
   currentPage,
   prevPage,
   editingTrack,

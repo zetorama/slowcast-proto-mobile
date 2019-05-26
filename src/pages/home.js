@@ -2,13 +2,13 @@ import React, { useCallback } from 'react'
 import { connect } from 'react-redux'
 
 import { PAGE_TRACKS_ROOT } from '../routes'
-import { gotoPage } from '../store/router'
+import { gotoPage } from '../store/nav'
 import { updateSettings, togglePlayPause } from '../store/player'
 import PlayerScreen from '../components/player-screen'
 
 export function Home({
   isPlaying,
-  isLoading,
+  isBuffering,
   playingTrack,
   playingSettings,
   gotoPage,
@@ -20,7 +20,7 @@ export function Home({
   return (
     <PlayerScreen
       isPlaying={isPlaying}
-      isLoading={isLoading}
+      isBuffering={isBuffering}
       track={playingTrack}
       settings={playingSettings}
       onPressTrackPicker={handlePressTrackPicker}
@@ -31,13 +31,15 @@ export function Home({
 }
 
 const mapStateToProps = ({
-  isPlaying,
-  isLoading,
-  playingTrack,
-  playingSettings,
+  player: {
+    isPlaying,
+    isBuffering,
+    playingTrack,
+    playingSettings,
+  },
 }) => ({
   isPlaying,
-  isLoading,
+  isBuffering,
   playingTrack,
   playingSettings,
 })

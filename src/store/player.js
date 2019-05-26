@@ -1,78 +1,100 @@
-import { PAGE_ROOT } from '../routes'
+// NOTE: structure based on https://github.com/erikras/ducks-modular-redux
 
-// NOTE: structure by https://github.com/erikras/ducks-modular-redux
+// Default state (thanks to hoisting, keeping it on top for a quick reference)
+reducer.getInitialState = () => ({
+  isReady: false,
+  isPlaying: false,
+  isBuffering: false,
+  playingTrack: undefined,
+  trackProgress: {
+    duration: 0,
+    position: 0,
+    bufferedPosition: 0,
+  },
+  isHolding: false, // derivative from `holdingSinceTs > -1`
+  holdingSinceTs: -1, // UNIX timestamp, ms
+  // lastHoldPosition: 0,
+
+  playingSettings: {
+    // currentMode: 'timings',
+    talkTime: 10,
+    holdTime: 10,
+    fadeTime: 10,
+  },
+  // playingChapters: {
+  //   currentMark: 0,
+  //   marks: [],
+  // },
+})
+
 
 // Action types
-export const SETTINGS_UPDATE = 'slowcast/player/SETTINGS_UPDATE'
-export const TRACK_SELECT = 'slowcast/player/TRACK_SELECT'
+export const SET_READY = 'slowcast/player/SET_READY'
+export const SET_PLAYING = 'slowcast/player/SET_PLAYING'
+export const TOGGLE_PLAYING = 'slowcast/player/TOGGLE_PLAYING'
+export const SET_BUFFERING = 'slowcast/player/SET_BUFFERING'
+export const SELECT_TRACK = 'slowcast/player/SELECT_TRACK'
+export const CLEAR_TRACK = 'slowcast/player/CLEAR_TRACK'
+export const UPDATE_SETTINGS = 'slowcast/player/UPDATE_SETTINGS'
+
 export const TRACK_REDISTRIBUTE = 'slowcast/player/TRACK_REDISTRIBUTE'
-export const PLAYING_TOGGLE = 'slowcast/player/PLAYING_TOGGLE'
-export const PLAYING_SET = 'slowcast/player/PLAYING_SET'
-export const LOADING_SET = 'slowcast/player/LOADING_SET'
 export const DEBUG_PLAYER_STATE_SET = 'slowcast/player/DEBUG_PLAYER_STATE_SET'
 
 // Reducer
-export default function reducer(state, action) {
+export default function reducer(state = reducer.getInitialState(), action) {
   const { type, payload = {} } = action
 
   switch (type) {
-    case DEBUG_PLAYER_STATE_SET: {
-      return {
+    case SET_READY: {
+      const { isReady } = payload
+      return isReady === state.isReady ? state : {
         ...state,
-        DEBUG_playerState: payload.playerState,
+        isReady,
+        ...handlePlayingChange(state, false),
       }
     }
 
-    case LOADING_SET: {
-      if (state.isLoading === payload.isLoading) return state
+    case SET_PLAYING: {
+      const patch = handlePlayingChange(state, payload.isPlaying)
+      return patch ? { ...state, ...patch } : state
+    }
 
-      return {
+    case TOGGLE_PLAYING: {
+      const patch = handlePlayingChange(state, !state.isPlaying)
+      return patch ? { ...state, ...patch } : state
+    }
+
+    case SET_BUFFERING: {
+      const { isBuffering } = payload
+      return isBuffering === state.isBuffering ? state : { ...state, isBuffering }
+    }
+
+    case SELECT_TRACK: {
+      const { playingTrack } = payload
+      return playingTrack === state.playingTrack ? state : {
         ...state,
-        isLoading: payload.isLoading,
+        playingTrack,
+        ...handlePlayingChange(state, false),
       }
     }
 
-    case PLAYING_TOGGLE: {
+    case CLEAR_TRACK: {
+      if (!state.playingTrack) return state
+
       return {
         ...state,
-        isPlaying: state.playingTrack ? !state.isPlaying : false,
+        playingTrack: undefined,
+        ...handlePlayingChange(state, false),
       }
     }
 
-    case PLAYING_SET: {
-      if (state.isPlaying === payload.isPlaying) return state
+    case UPDATE_SETTINGS: {
+      const { playingSettings } = payload
+      if (playingSettings === state.playingSettings) return state
 
       return {
         ...state,
-        isPlaying: payload.isPlaying,
-      }
-    }
-
-    case TRACK_SELECT: {
-      return {
-        ...state,
-        currentPage: PAGE_ROOT,
-        prevPage: null,
-
-        playingTrack: payload.track,
-      }
-    }
-
-    case TRACK_REDISTRIBUTE: {
-      return {
-        ...state,
-        playingTrack: { ...state.playingTrack },
-      }
-    }
-
-    case SETTINGS_UPDATE: {
-      return {
-        ...state,
-
-        playingSettings: {
-          ...state.playingSettings,
-          ...payload.settings,
-        }
+        playingSettings: { ...state.playingSettings, ...playingSettings },
       }
     }
 
@@ -81,36 +103,54 @@ export default function reducer(state, action) {
   }
 }
 
+// Helpers
+const handlePlayingChange = (state, isPlaying) => {
+  if (isPlaying === state.isPlaying || isPlaying && !state.playingTrack) return undefined
+
+  if (isPlaying) {
+    // on play
+    return {
+      isPlaying: true,
+    }
+  }
+
+  // on cancel
+  return {
+    isPlaying: false,
+
+  }
+}
+
 // Actions
-export const togglePlayPause = () => ({
-  type: PLAYING_TOGGLE,
+export const setReady = (isReady) => ({
+  type: SET_READY,
+  payload: { isReady },
 })
 
-export const setLoading = (isLoading) => ({
-  type: LOADING_SET,
-  payload: { isLoading }
+export const setBuffering = (isBuffering) => ({
+  type: SET_BUFFERING,
+  payload: { isBuffering },
 })
 
 export const setPlaying = (isPlaying) => ({
-  type: PLAYING_SET,
-  payload: { isPlaying }
+  type: SET_PLAYING,
+  payload: { isPlaying },
 })
 
-export const DEBUG_setPlayerState = (playerState) => ({
-  type: DEBUG_PLAYER_STATE_SET,
-  payload: { playerState },
+export const togglePlayPause = () => ({
+  type: TOGGLE_PLAYING,
 })
 
-export const selectTrack = (track) => ({
-  type: TRACK_SELECT,
-  payload: { track },
+export const selectTrack = (playingTrack) => ({
+  type: SELECT_TRACK,
+  payload: { playingTrack },
 })
 
-export const redistributeSelectedTrack = () => ({
-  type: TRACK_REDISTRIBUTE,
+export const clearTrack = () => ({
+  type: CLEAR_TRACK,
 })
 
-export const updateSettings = (settings) => ({
-  type: SETTINGS_UPDATE,
-  payload: { settings },
+export const updateSettings = (playingSettings) => ({
+  type: UPDATE_SETTINGS,
+  payload: { playingSettings },
 })

@@ -1,58 +1,46 @@
-import { PAGE_ROOT } from '../routes'
+import * as route from '../routes'
+import { SELECT_TRACK } from './player'
+import {
+  TRACK_SAVE_EDITING,
+  TRACK_SET_EDITING,
+  TRACK_DELETE,
+  TRACK_EDIT,
+} from './library'
 
-// Action types
-export const PAGE_GO_TO = 'slowcast/router/PAGE_GO_TO'
-export const PAGE_GO_HOME = 'slowcast/router/PAGE_GO_HOME'
-export const PAGE_GO_BACK = 'slowcast/router/PAGE_GO_BACK'
+// NOTE: this is a specific (temporary) reducer to handle page transitions on different actions
+// TODO: might be better go with some native-navigation and/or redux-saga/redux-loop
 
-// Reducer
-export default function reducer(state, action) {
-  const { type, payload } = action
+const transitions = {
+  [route.PAGE_TRACKS_ROOT]: {
+    [TRACK_SET_EDITING]: route.PAGE_TRACKS_ADD,
+    [TRACK_EDIT]: route.PAGE_TRACKS_EDIT,
+    [SELECT_TRACK]: route.PAGE_ROOT,
+  },
 
-  switch (type) {
-    case PAGE_GO_TO: {
-      return {
-        ...state,
-        currentPage: payload.page,
-        prevPage: state.currentPage,
-      }
-    }
+  [route.PAGE_TRACKS_ADD]: {
+    [TRACK_DELETE]: route.PAGE_TRACKS_ROOT,
+    [TRACK_SAVE_EDITING]: route.PAGE_TRACKS_ROOT,
+  },
 
-    case PAGE_GO_HOME: {
-      return {
-        ...state,
-        currentPage: PAGE_ROOT,
-        prevPage: state.currentPage,
-      }
-    }
-
-    case PAGE_GO_BACK: {
-      if (!state.prevPage || state.prevPage === state.currentPage) {
-        return state
-      }
-
-      return {
-        ...state,
-        currentPage: state.prevPage,
-        prevPage: null,
-      }
-    }
-
-    default:
-      return state
-  }
+  [route.PAGE_TRACKS_EDIT]: {
+    [TRACK_DELETE]: route.PAGE_TRACKS_ROOT,
+    [TRACK_SAVE_EDITING]: route.PAGE_TRACKS_ROOT,
+  },
 }
 
-// Actions
-export const gotoPage = (page) => ({
-  type: PAGE_GO_TO,
-  payload: { page },
-})
+export default function reducer(state, action) {
+  const { nav: { currentPage } } = state
+  const nextPage = transitions[currentPage] && transitions[currentPage][action.type]
 
-export const goHome = () => ({
-  type: PAGE_GO_HOME,
-})
+  console.log('*** ACTION ***', action.type, currentPage)
 
-export const goBack = () => ({
-  type: PAGE_GO_BACK,
-})
+  return !nextPage || nextPage === currentPage ? state : {
+    // NOTE: basically, same logic as in `nav/PAGE_GO_TO` reducer
+    ...state,
+    nav: {
+      ...state.nav,
+      currentPage: nextPage,
+      prevPage: currentPage,
+    },
+  }
+}

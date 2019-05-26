@@ -1,64 +1,40 @@
-import { createStore } from 'redux'
+import { createStore, combineReducers } from 'redux'
 
-import { PAGE_ROOT } from '../routes'
-import routerReducer from './router'
-import tracksReducer from './tracks'
-import playerReducer from './player'
+import nav from './nav'
+import library from './library'
+import player from './player'
+import router from './router'
 
 let store
 
 export function getStore() {
   if (!store) {
-    store = createStore(getReducer(), getDefaults())
+    store = createStore(getRootReducer(), getInitialState(), getEnhancer())
   }
 
   return store
 }
 
+export function getEnhancer() {}
 
-export function getReducer() {
-  // TODO: might be better to re-think store structure and use `combineReducers`
+export function getRootReducer() {
   const reducers = [
-    routerReducer,
-    tracksReducer,
-    playerReducer,
+    combineReducers({
+      nav,
+      library,
+      player,
+    }),
+    // these need to get whole state
+    router,
   ]
-
   return (state, action) => reducers.reduce((state, fn) => fn(state, action), state)
 }
 
-export function getDefaults() {
+export function getInitialState() {
   return {
-    // router
-    currentPage: PAGE_ROOT,
-    prevPage: undefined,
-
-    // player
-    isLoading: false,
-    isPlaying: false,
-    isTalking: false,
-    DEBUG_playerState: 'n/a',
-    playingSettings: {
-      // currentMode: 'timings',
-      talkTime: 10,
-      holdTime: 10,
-      fadeTime: 10,
-    },
-    playingProgress: {
-      duration: 0,
-      position: 0,
-      bufferedPosition: 0,
-    },
-    playingChapters: {
-      currentMark: 0,
-      marks: [],
-    },
-    playingTrack: undefined,
-
-    // tracks
-    // tracks: [],
-    tracks: require('./__tracks__.json'),
-    editingTrack: undefined,
+    nav: nav.getInitialState(),
+    library: library.getInitialState(),
+    player: player.getInitialState(),
   }
 }
 

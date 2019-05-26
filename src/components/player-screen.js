@@ -13,7 +13,7 @@ export function PlayerScreen({
   progress = {},
   settings = {},
   isPlaying = false,
-  isLoading = false,
+  isBuffering = false,
   onPressTrackPicker,
   onChangeSettings,
   onPressPlay,
@@ -39,7 +39,7 @@ export function PlayerScreen({
         disabled={!Boolean(track.url)}
         progress={progress}
         isPlaying={isPlaying}
-        isLoading={isLoading}
+        isBuffering={isBuffering}
         onPressPlay={onPressPlay}
       />
 
@@ -50,7 +50,7 @@ export function PlayerScreen({
 export function PlayerProgress({
   style,
   disabled,
-  isLoading,
+  isBuffering,
   isPlaying,
   progress = {},
   onPressPlay,
@@ -68,9 +68,9 @@ export function PlayerProgress({
           </Text>
         )}
 
-        {isLoading && (
+        {isBuffering && (
           <Text style={styles.progressLabel}>
-            Loading…
+            Buffering…
           </Text>
         )}
 
