@@ -6,6 +6,7 @@ import {
   discardPlayer,
   setPlayingTrack,
   togglePlayPause,
+  seekTo,
 } from './services/player'
 
 import {
@@ -69,6 +70,7 @@ export function subscribeToStore() {
     isPlaying,
     isStreamActive,
     playingTrack,
+    requestPosition,
   } = getPlayerState()
 
   return subscribe(() => {
@@ -99,6 +101,13 @@ export function subscribeToStore() {
       if (!isPlayerAlive()) restorePlayer()
 
       togglePlayPause(isStreamActive)
+    }
+
+    if (requestPosition !== state.requestPosition) {
+      requestPosition = state.requestPosition
+      if (!isPlayerAlive()) restorePlayer()
+
+      seekTo(requestPosition)
     }
 
     console.log('==========================', isPlaying, isStreamActive)

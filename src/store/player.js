@@ -18,8 +18,9 @@ reducer.getInitialState = () => ({
   isStreamActive: false, // derivative from `holdingSinceTs > -1`
   holdingSinceTs: -1, // UNIX timestamp, ms
   holdPosition: 0,
-  prevHoldPosition: 0,
-  holdingTimeLeft: 0, //
+  holdingTimeLeft: 0, // seconds
+  holdingWaitLeft: 0, // seconds
+  requestPosition: -1, // seconds
 
   playingSettings: {
     // currentMode: 'timings',
@@ -43,6 +44,7 @@ export const SELECT_TRACK = 'slowcast/player/SELECT_TRACK'
 export const CLEAR_TRACK = 'slowcast/player/CLEAR_TRACK'
 export const UPDATE_SETTINGS = 'slowcast/player/UPDATE_SETTINGS'
 export const UPDATE_TRACK_PROGRESS = 'slowcast/player/UPDATE_TRACK_PROGRESS'
+export const REQUEST_TRACK_POSITION = 'slowcast/player/REQUEST_TRACK_POSITION'
 
 export const TRACK_REDISTRIBUTE = 'slowcast/player/TRACK_REDISTRIBUTE'
 export const DEBUG_PLAYER_STATE_SET = 'slowcast/player/DEBUG_PLAYER_STATE_SET'
@@ -106,6 +108,24 @@ export default function reducer(state = reducer.getInitialState(), action) {
       }
     }
 
+    case REQUEST_TRACK_POSITION: {
+      const { requestPosition, isStreamActive } = payload
+      if (requestPosition === state.requestPosition && !(isStreamActive && !state.isStreamActive)) return state
+
+      const { position = 0 } = state.trackProgress || {}
+
+      return {
+        ...state,
+        requestPosition,
+        // shift on the same amount, that progress is gonna change
+        holdPosition: typeof isStreamActive === 'boolean'
+          ? requestPosition
+          : state.holdPosition + (requestPosition - position),
+        // switch stream if requested
+        isStreamActive: typeof isStreamActive === 'boolean' ? isStreamActive : state.isStreamActive,
+      }
+    }
+
     case UPDATE_SETTINGS: {
       const { playingSettings } = payload
       if (playingSettings === state.playingSettings) return state
@@ -145,20 +165,21 @@ const handlePlayingProgress = (state) => {
       position,
     } = {},
     playingSettings: {
-      talkTime, // currently treat as seconds
-      holdTime, // currently treat as seconds
+      talkTime, // min
+      holdTime, // min
     } = {},
   } = state
 
-  const holdingTimeLeft = holdingSinceTs > 1 ? holdTime - (new Date() - holdingSinceTs) / 1000 : 0
+  const holdingTimeLeft = holdingSinceTs > 1 ? (holdTime * 60) - (new Date() - holdingSinceTs) / 1000 : 0
+  const holdingWaitLeft = holdPosition + (talkTime * 60) - position
 
-  if (isStreamActive && position > holdPosition + talkTime) {
+  if (isStreamActive && holdingWaitLeft < 0) {
     return {
       isStreamActive: false,
       holdPosition: position,
-      prevHoldPosition: holdPosition,
       holdingSinceTs: new Date(),
-      holdingTimeLeft,
+      holdingTimeLeft: (holdTime * 60),
+      holdingWaitLeft: 0,
     }
   }
 
@@ -166,11 +187,14 @@ const handlePlayingProgress = (state) => {
     return {
       isStreamActive: true,
       holdingTimeLeft: 0,
+      holdingWaitLeft: (talkTime * 60),
+
     }
   }
 
   return {
     holdingTimeLeft,
+    holdingWaitLeft,
   }
 }
 
@@ -211,6 +235,14 @@ export const selectTrack = (playingTrack) => ({
 
 export const clearTrack = () => ({
   type: CLEAR_TRACK,
+})
+
+export const seekTo = (requestPosition, isStreamActive = undefined) => ({
+  type: REQUEST_TRACK_POSITION,
+  payload: {
+    requestPosition: Math.max(0, requestPosition),
+    isStreamActive,
+  },
 })
 
 export const updateSettings = (playingSettings) => ({

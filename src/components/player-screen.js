@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { StyleSheet, View, Text } from 'react-native'
+import { StyleSheet, View, Text, TouchableNativeFeedback, Dimensions } from 'react-native'
 
 import { PrimaryButton, IconButton, Icons, SpinnerField } from './common/form'
 import { TrackCard } from './common/track'
@@ -14,6 +14,7 @@ const formatTime = (duration) => {
   return min ? `${min}′ ${sec}″` : `${sec}″`
 }
 
+// TODO: OMG! So many props passing! refactor?
 export function PlayerScreen({
   style,
   track = {},
@@ -22,8 +23,12 @@ export function PlayerScreen({
   isPlayerOk = false,
   isPlaying = false,
   isBuffering = false,
+  isHolding = false,
+  holdingTimeLeft,
+  holdingWaitLeft,
   onPressTrackPicker,
   onChangeSettings,
+  onChangePosition,
   onPressPlay,
 }) {
 
@@ -46,10 +51,15 @@ export function PlayerScreen({
         style={styles.screenProgress}
         disabled={!isPlayerOk || !track.url}
         progress={progress}
+        settings={settings}
         isPlayerOk={isPlayerOk}
         isPlaying={isPlaying}
         isBuffering={isBuffering}
+        isHolding={isHolding}
+        holdingTimeLeft={holdingTimeLeft}
+        holdingWaitLeft={holdingWaitLeft}
         onPressPlay={onPressPlay}
+        onChangePosition={onChangePosition}
       />
 
     </View>
@@ -62,44 +72,123 @@ export function PlayerProgress({
   isPlayerOk,
   isBuffering,
   isPlaying,
+  isHolding,
+  holdingTimeLeft,
+  holdingWaitLeft,
   progress,
+  settings,
   onPressPlay,
+  onChangePosition,
 }) {
   const playIcon = isPlaying ? Icons.pauseCircle : Icons.playCircle
-  const { duration, position = 0 } = progress || {}
+  const { duration = 0, position = 0 } = progress || {}
   const diskStyle = isBuffering ? styles.diskBuffering : !isPlayerOk ? styles.diskNotOk : ''
-  const bufferPercents = duration ? position / duration * 100 : 0
-  const progressPercents = duration ? position / duration * 100 : 0
+  const bufferPercents = position > 0 ? position / duration * 100 : 0
+  const progressPercents = position > 0 ? position / duration * 100 : 0
+  const hasProgress = !disabled && position > 0
+
+  const totalParts = Math.ceil(progress.duration / (settings.talkTime * 60))
+  const currentPart = Math.ceil(progress.position / (settings.talkTime * 60))
+
+  const onPressProgress = useCallback((ev) => {
+    const { width } = Dimensions.get('window')
+    const x = ev.nativeEvent.locationX
+
+    const requestPosition = x / width * duration
+    return onChangePosition(requestPosition)
+  }, [onChangePosition, duration])
+
+  const skip20Forward = useCallback(() => onChangePosition(position + 20), [onChangePosition, position])
+  const skip20Backward = useCallback(() => onChangePosition(position - 20), [onChangePosition, position])
+  const jumpForward = useCallback(() => onChangePosition(position, true), [onChangePosition, position])
+  const jumpBackward = useCallback(
+    () => onChangePosition(position - (settings.talkTime * 60), true),
+    [onChangePosition, position, settings.talkTime],
+  )
 
   return (
     <View style={StyleSheet.flatten([styles.playerProgress, style])}>
       <View style={styles.infoPanel}>
 
-        {isBuffering ? (
-          <Text style={styles.progressLabel}>
-            Buffering…
-          </Text>
-        ) : Boolean(!disabled && duration) && (
-          <Text style={styles.progressLabel}>
-            {formatTime(position)} / {formatTime(duration)}
-          </Text>
+        {!hasProgress && isBuffering ? (
+          <View style={styles.progressLabel}>
+            <Text style={styles.progressLabelText}>
+              Buffering…
+            </Text>
+          </View>
+
+        ) : hasProgress && (
+          <>
+            <View style={styles.progressLabel}>
+              <Text style={styles.progressLabelText}>
+                {formatTime(position)} / {formatTime(duration)}
+              </Text>
+            </View>
+
+            {isBuffering ? (
+              <PrimaryButton title={`Buffering…`} disabled small style={styles.progressBadge} />
+            ) : isPlaying && isHolding && holdingTimeLeft > 0 ? (
+              <PrimaryButton title={`HOLD: ${formatTime(holdingTimeLeft)}`} disabled small style={styles.holdingLeft} />
+            ) : (
+              <PrimaryButton title={`TALK: ${formatTime(holdingWaitLeft)}`} disabled small style={styles.holdingLeft} />
+            )}
+
+            <View style={styles.progressLabel}>
+              <Text style={styles.progressLabelText}>
+                ch.{currentPart} / {totalParts}
+              </Text>
+            </View>
+          </>
         )}
 
       </View>
-      <View style={styles.progressBar}>
-        <View style={StyleSheet.flatten([styles.progressBuffered, { width: `${bufferPercents}%` }])} />
+      <TouchableNativeFeedback disabled={!isPlaying} onPress={onPressProgress}>
+        <View style={styles.progressPanel}>
+          <View style={styles.progressBar}>
+            <View style={StyleSheet.flatten([styles.progressBuffered, { width: `${bufferPercents}%` }])} />
 
-        {Boolean(!disabled && duration) && (
-          <View style={StyleSheet.flatten([styles.progressDisk, diskStyle, { left: `${progressPercents}%` }])} />
-        )}
-      </View>
+            {isPlaying && hasProgress && (
+              <View style={StyleSheet.flatten([styles.progressDisk, diskStyle, { left: `${progressPercents}%` }])} />
+              )}
+          </View>
+        </View>
+      </TouchableNativeFeedback>
       <View style={styles.controlsPanel}>
+        {isPlaying && hasProgress && (isHolding ? (
+          <IconButton
+            icon={Icons.stepBackward}
+            iconStyle={styles.skipIcon}
+            onPress={jumpBackward}
+          />
+        ) : (
+          <IconButton
+            icon={Icons.chevronCircleLeft}
+            iconStyle={styles.skipIcon}
+            onPress={skip20Backward}
+          />
+        ))}
+
         <IconButton
           icon={playIcon}
           disabled={disabled}
           iconStyle={!disabled ? styles.playIcon : styles.playIconDisabled}
           onPress={onPressPlay}
         />
+
+        {isPlaying && hasProgress && (isHolding ? (
+          <IconButton
+            icon={Icons.stepForward}
+            iconStyle={styles.skipIcon}
+            onPress={jumpForward}
+          />
+        ) : (
+          <IconButton
+            icon={Icons.chevronCircleRight}
+            iconStyle={styles.skipIcon}
+            onPress={skip20Forward}
+          />
+        ))}
+
       </View>
 
     </View>
@@ -137,6 +226,7 @@ export function PlayerSettings({ style, settings, onChangeSettings = noop }) {
           onPressSpinner={handleChangeHoldTime}
         />
         <SpinnerField
+          disabled={true}
           fieldStyle={styles.rowField}
           style={styles.settingInput}
           label='FADE, sec'
@@ -195,8 +285,6 @@ export const styles = StyleSheet.create({
   progressBar: {
     alignItems: 'flex-start',
     height: 2,
-    marginLeft: -20,
-    marginRight: -20,
     backgroundColor: '#464866',
   },
   progressBuffered: {
@@ -220,18 +308,27 @@ export const styles = StyleSheet.create({
   },
   infoPanel: {
     flexDirection: 'row',
-    alignItems: 'stretch',
+    alignItems: 'center',
     justifyContent: 'space-around',
     minHeight: 60,
+    paddingBottom: 10,
+  },
+  progressPanel: {
     marginLeft: -20,
     marginRight: -20,
-    padding: 20,
+    height: 20,
+    alignItems: 'stretch',
+    justifyContent: 'center',
   },
   controlsPanel: {
-    paddingTop: 20,
+    paddingTop: 10,
     flexDirection: 'row',
-    alignItems: 'stretch',
-    justifyContent: 'space-around',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+  },
+  skipIcon: {
+    fontSize: 40,
+    color: '#2e9cca',
   },
   playIcon: {
     fontSize: 72,
@@ -242,9 +339,20 @@ export const styles = StyleSheet.create({
     color: '#464866',
   },
   progressLabel: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressLabelText: {
     fontSize: 16,
     color: '#29648a',
   },
+  progressBadge: {
+    flex: 1,
+  },
+  holdingLeft: {
+    minWidth: 100,
+  }
 })
 
 export default PlayerScreen

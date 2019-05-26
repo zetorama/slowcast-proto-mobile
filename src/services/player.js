@@ -71,3 +71,16 @@ export async function togglePlayPause(isPlaying) {
     () => isPlaying ? TrackPlayer.play() : TrackPlayer.pause(),
   )
 }
+
+export async function seekTo(position) {
+  console.log('>>> seekTo', position)
+
+  if (!isPlayerAlive()) {
+    throw new Error('Player must be ready to toggle play/pause')
+  }
+
+  return Q.enqueue(
+    () => TrackPlayer.seekTo(position),
+  )
+
+}

@@ -33,6 +33,7 @@ export function SpinnerField({
   max = Infinity,
   onPressSpinner = noop,
   keyboardType = 'numeric',
+  disabled,
   ...inputProps
 }) {
   const decValue = typeof value === 'number' && value - step >= min ? value - step : null
@@ -50,12 +51,14 @@ export function SpinnerField({
     <Field label={label} fieldStyle={fieldStyle}>
       <View style={styles.spinnerRow}>
         <IconButton
+          disabled={disabled}
           style={styles.spinnerButton}
           iconStyle={styles.spinnerButtonIcon}
           icon={Icons.minus}
           onPress={handlePressMinus}
         />
         <TextInput
+          disabled={disabled}
           style={StyleSheet.flatten([styles.spinnerInput, style])}
           value={String(value)}
           keyboardType={keyboardType}
@@ -63,6 +66,7 @@ export function SpinnerField({
           {...inputProps}
         />
         <IconButton
+          disabled={disabled}
           style={styles.spinnerButton}
           iconStyle={styles.spinnerButtonIcon}
           icon={Icons.plus}
@@ -83,11 +87,24 @@ export function IconButton({ style, iconStyle, icon, disabled, ...touchableProps
   )
 }
 
-export function PrimaryButton({ style, titleStyle, title, disabled, ...touchableProps }) {
+export function PrimaryButton({ style, titleStyle, title, small, disabled, ...touchableProps }) {
+  const buttonStyle = StyleSheet.flatten([
+    styles.primaryButton,
+    disabled && styles.disabledButton,
+    small && styles.smallButton,
+    style,
+  ])
+  const textStyle = StyleSheet.flatten([
+    styles.primaryButtonText,
+    disabled && styles.disabledButtonText,
+    small && styles.smallButtonText,
+    titleStyle,
+  ])
+
   return (
     <TouchableNativeFeedback disabled={disabled} {...touchableProps}>
-      <View style={StyleSheet.flatten([styles.primaryButton, disabled && styles.disabledButton, style])}>
-        <Text style={StyleSheet.flatten([styles.primaryButtonText, disabled && styles.disabledButtonText, titleStyle])}>
+      <View style={buttonStyle}>
+        <Text style={textStyle}>
           {title}
         </Text>
       </View>
@@ -153,6 +170,14 @@ export const styles = StyleSheet.create({
   },
   disabledButtonText: {
     color: '#aaabbb',
+  },
+  smallButton: {
+    padding: 3,
+    paddingLeft: 8,
+    paddingRight: 8,
+  },
+  smallButtonText: {
+    fontSize: 14,
   },
 })
 
