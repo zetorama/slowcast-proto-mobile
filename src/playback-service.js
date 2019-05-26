@@ -67,10 +67,11 @@ export function subscribeToStore() {
   let {
     isReady,
     isPlaying,
+    isStreamActive,
     playingTrack,
   } = getPlayerState()
 
-  return subscribe((...args) => {
+  return subscribe(() => {
     const state = getPlayerState()
     // NOTE: the order of operations might be important for now
     // e.g. handling `isReady` is supposed to be the very first operation
@@ -83,16 +84,24 @@ export function subscribeToStore() {
       playingTrack = state.playingTrack
       if (!isPlayerAlive()) restorePlayer()
 
-      setPlayingTrack({ playingTrack })
+      setPlayingTrack(playingTrack)
     }
 
     if (isPlaying !== state.isPlaying) {
       isPlaying = state.isPlaying
       if (!isPlayerAlive()) restorePlayer()
 
-      togglePlayPause({ isPlaying })
       toggleProgressWatcher(isPlaying)
     }
+
+    if (isStreamActive !== state.isStreamActive) {
+      isStreamActive = state.isStreamActive
+      if (!isPlayerAlive()) restorePlayer()
+
+      togglePlayPause(isStreamActive)
+    }
+
+    console.log('==========================', isPlaying, isStreamActive)
 
   })
 }
@@ -110,6 +119,22 @@ const restorePlayer = () => {
   return preparePlayer()
 }
 
+let playingSinceTs
+let progressWatcherTid
+const toggleProgressWatcher = (isOn) => {
+  if (!isOn && progressWatcherTid) {
+    clearInterval(progressWatcherTid)
+    progressWatcherTid = null
+    playingSinceTs = null
+  }
+
+  if (isOn && !progressWatcherTid) {
+    progressWatcherTid = setInterval(putProgressToStore, PROGRESS_UPDATE_EVERY_MS)
+    playingSinceTs = new Date()
+    putProgressToStore()
+  }
+}
+
 const putProgressToStore = async () => {
   const { dispatch } = getStore()
 
@@ -119,18 +144,8 @@ const putProgressToStore = async () => {
     await TrackPlayer.getBufferedPosition(),
   ])
 
-  dispatch(updateTrackProgress({ duration, position, bufferedPosition }))
-}
+  // add custom metric to track how many seconds passed since last play
+  const playDuration = playingSinceTs ? (new Date() - playingSinceTs) / 1000 : undefined
 
-let progressWatcherTid
-const toggleProgressWatcher = (isOn) => {
-  if (!isOn && progressWatcherTid) {
-    clearInterval(progressWatcherTid)
-    progressWatcherTid = null
-  }
-
-  if (isOn && !progressWatcherTid) {
-    progressWatcherTid = setInterval(putProgressToStore, PROGRESS_UPDATE_EVERY_MS)
-    putProgressToStore()
-  }
+  dispatch(updateTrackProgress({ playDuration, duration, position, bufferedPosition }))
 }

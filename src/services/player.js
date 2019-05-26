@@ -47,7 +47,7 @@ export async function preparePlayer() {
   )
 }
 
-export async function setPlayingTrack({ playingTrack }) {
+export async function setPlayingTrack(playingTrack) {
   console.log('>>> setPlayingTrack', playingTrack)
 
   if (!isPlayerAlive()) {
@@ -60,7 +60,7 @@ export async function setPlayingTrack({ playingTrack }) {
   )
 }
 
-export async function togglePlayPause({ isPlaying }) {
+export async function togglePlayPause(isPlaying) {
   console.log('>>> togglePlayPause', isPlaying)
 
   if (!isPlayerAlive()) {

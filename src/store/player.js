@@ -10,13 +10,16 @@ reducer.getInitialState = () => ({
   playingTrack: undefined,
   trackProgress: undefined,
   // trackProgress: {
+  //   playDuration: 0, // custom: how long since "play" in seconds
   //   duration: 0,
   //   position: 0,
   //   bufferedPosition: 0,
   // },
-  isHolding: false, // derivative from `holdingSinceTs > -1`
+  isStreamActive: false, // derivative from `holdingSinceTs > -1`
   holdingSinceTs: -1, // UNIX timestamp, ms
-  // lastHoldPosition: 0,
+  holdPosition: 0,
+  prevHoldPosition: 0,
+  holdingTimeLeft: 0, //
 
   playingSettings: {
     // currentMode: 'timings',
@@ -63,11 +66,16 @@ export default function reducer(state = reducer.getInitialState(), action) {
       return isPlaying === state.isPlaying ? state : {
         ...state,
         isPlaying,
+        isStreamActive: isPlaying,
       }
     }
 
     case TOGGLE_PLAYING: {
-      return { ...state, isPlaying: !state.isPlaying }
+      return {
+        ...state,
+        isPlaying: !state.isPlaying,
+        isStreamActive: !state.isPlaying,
+      }
     }
 
     case SET_PLAYER_STATE: {
@@ -108,6 +116,7 @@ export default function reducer(state = reducer.getInitialState(), action) {
       }
     }
 
+    // expecting this to be called like every second
     case UPDATE_TRACK_PROGRESS: {
       const { trackProgress } = payload
       if (trackProgress === state.trackProgress) return state
@@ -115,6 +124,7 @@ export default function reducer(state = reducer.getInitialState(), action) {
       return {
         ...state,
         trackProgress: { ...state.trackProgress, ...trackProgress },
+        ...handlePlayingProgress(state),
       }
     }
 
@@ -124,11 +134,52 @@ export default function reducer(state = reducer.getInitialState(), action) {
 }
 
 // Helpers
+const handlePlayingProgress = (state) => {
+  if (!state.isPlaying) return undefined
+
+  const {
+    isStreamActive,
+    holdPosition,
+    holdingSinceTs,
+    trackProgress: {
+      position,
+    } = {},
+    playingSettings: {
+      talkTime, // currently treat as seconds
+      holdTime, // currently treat as seconds
+    } = {},
+  } = state
+
+  const holdingTimeLeft = holdingSinceTs > 1 ? holdTime - (new Date() - holdingSinceTs) / 1000 : 0
+
+  if (isStreamActive && position > holdPosition + talkTime) {
+    return {
+      isStreamActive: false,
+      holdPosition: position,
+      prevHoldPosition: holdPosition,
+      holdingSinceTs: new Date(),
+      holdingTimeLeft,
+    }
+  }
+
+  if (!isStreamActive && holdingTimeLeft < 0) {
+    return {
+      isStreamActive: true,
+      holdingTimeLeft: 0,
+    }
+  }
+
+  return {
+    holdingTimeLeft,
+  }
+}
+
 const handlePlayingReset = (state) => {
   if (!state.isPlaying) return undefined
 
   return {
     isPlaying: false,
+    isStreamActive: false,
     trackProgress: undefined,
   }
 }
