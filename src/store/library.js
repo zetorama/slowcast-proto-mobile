@@ -63,7 +63,10 @@ export default function reducer(state = reducer.getInitialState(), action) {
       const { editingTrack } = payload
       if (editingTrack === state.editingTrack) return state
 
-      return { ...state, editingTrack }
+      return {
+        ...state,
+        editingTrack: { ...editingTrack },
+      }
     }
 
     case TRACK_UPDATE_EDITING: {

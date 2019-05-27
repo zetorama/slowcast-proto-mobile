@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { connect } from 'react-redux'
 
 import { goHome } from '../store/nav'
@@ -10,10 +10,12 @@ import List from '../components/track-list'
 import { PrimaryButton } from '../components/common/form'
 
 export function TracksList({ tracks, goHome, setEditingTrack, editTrack, selectTrack }) {
+  const handleTrackAdd = useCallback(() => setEditingTrack({}), [setEditingTrack])
+
   return (
     <AppLayout title='Tracks List' iconPrimary={Icons.arrowLeft} onPressPrimary={goHome}>
       <List tracks={tracks} onPressIcon={editTrack} onPressTitle={selectTrack}>
-        <PrimaryButton title='Add New Track' onPress={setEditingTrack} />
+        <PrimaryButton title='Add New Track' onPress={handleTrackAdd} />
         </List>
     </AppLayout>
   )
