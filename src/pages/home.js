@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 
 import { PAGE_TRACKS_ROOT } from '../routes'
 import { gotoPage } from '../store/nav'
-import { updateSettings, togglePlayPause, seekTo } from '../store/player'
+import { updateSettings, togglePlayPause, seekTo, ackPlayerError } from '../store/player'
 import AppLayout, { Icons } from '../components/app-layout'
 import PlayerScreen from '../components/player-screen'
 
@@ -15,12 +15,14 @@ export function Home({
   playingTrack,
   playingSettings,
   trackProgress,
+  playerErrors,
   holdingTimeLeft,
   holdingWaitLeft,
   gotoPage,
   togglePlayPause,
   updateSettings,
   seekTo,
+  ackPlayerError,
 }) {
   const handlePressTrackPicker = useCallback(() => gotoPage(PAGE_TRACKS_ROOT), [gotoPage, PAGE_TRACKS_ROOT])
 
@@ -36,6 +38,8 @@ export function Home({
         track={playingTrack}
         progress={trackProgress}
         settings={playingSettings}
+        playerErrors={playerErrors}
+        onPressAckError={ackPlayerError}
         onPressTrackPicker={handlePressTrackPicker}
         onChangeSettings={updateSettings}
         onPressPlay={togglePlayPause}
@@ -56,6 +60,7 @@ const mapStateToProps = ({
     trackProgress,
     holdingTimeLeft,
     holdingWaitLeft,
+    playerErrors,
   },
 }) => ({
   isPlayerOk,
@@ -67,6 +72,7 @@ const mapStateToProps = ({
   trackProgress,
   holdingTimeLeft,
   holdingWaitLeft,
+  playerErrors,
 })
 
 const mapDispatchToProps = {
@@ -74,6 +80,7 @@ const mapDispatchToProps = {
   seekTo,
   updateSettings,
   togglePlayPause,
+  ackPlayerError,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home)

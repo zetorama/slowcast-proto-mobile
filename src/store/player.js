@@ -28,6 +28,13 @@ reducer.getInitialState = () => ({
     holdTime: 10,
     fadeTime: 10,
   },
+
+  // playerErrors: [{
+  //   code: 123,
+  //   message: 'error',
+  //   isAck: false,
+  // }],
+  playerErrors: [],
   // playingChapters: {
   //   currentMark: 0,
   //   marks: [],
@@ -45,9 +52,8 @@ export const CLEAR_TRACK = 'slowcast/player/CLEAR_TRACK'
 export const UPDATE_SETTINGS = 'slowcast/player/UPDATE_SETTINGS'
 export const UPDATE_TRACK_PROGRESS = 'slowcast/player/UPDATE_TRACK_PROGRESS'
 export const REQUEST_TRACK_POSITION = 'slowcast/player/REQUEST_TRACK_POSITION'
-
-export const TRACK_REDISTRIBUTE = 'slowcast/player/TRACK_REDISTRIBUTE'
-export const DEBUG_PLAYER_STATE_SET = 'slowcast/player/DEBUG_PLAYER_STATE_SET'
+export const REPORT_PLAYER_ERROR = 'slowcast/player/REPORT_PLAYER_ERROR'
+export const ACKNOWLEDGE_PLAYER_ERROR = 'slowcast/player/ACKNOWLEDGE_PLAYER_ERROR'
 
 // Reducer
 export default function reducer(state = reducer.getInitialState(), action) {
@@ -133,6 +139,32 @@ export default function reducer(state = reducer.getInitialState(), action) {
       return {
         ...state,
         playingSettings: { ...state.playingSettings, ...playingSettings },
+      }
+    }
+
+    case REPORT_PLAYER_ERROR: {
+      const { code, message } = payload
+      // keep only last ten errors
+      const playerErrors = [{ code, message, isAck: false }].concat(state.playerErrors).slice(0, 10)
+
+      return {
+        ...state,
+        playerErrors,
+      }
+    }
+
+    case ACKNOWLEDGE_PLAYER_ERROR: {
+      const { index } = payload
+
+      console.log(index, state.playerErrors)
+      if (!state.playerErrors[index] || state.playerErrors[index].isAck) return state
+
+      // keep only last ten errors
+      const playerErrors = state.playerErrors.map((one, idx) => idx !== index ? one : { ...one, isAck: true })
+
+      return {
+        ...state,
+        playerErrors,
       }
     }
 
@@ -253,4 +285,14 @@ export const updateSettings = (playingSettings) => ({
 export const updateTrackProgress = (trackProgress) => ({
   type: UPDATE_TRACK_PROGRESS,
   payload: { trackProgress },
+})
+
+export const reportPlayerError = (code, message) => ({
+  type: REPORT_PLAYER_ERROR,
+  payload: { code, message },
+})
+
+export const ackPlayerError = (index = 0) => ({
+  type: ACKNOWLEDGE_PLAYER_ERROR,
+  payload: { index },
 })

@@ -14,6 +14,7 @@ import {
   setPlaying,
   setPlayerState,
   updateTrackProgress,
+  reportPlayerError,
 } from './store/player'
 
 import getStore from './store'
@@ -24,6 +25,12 @@ const PROGRESS_UPDATE_EVERY_MS = 999
 // subscribing here to variis playback updates, and tell store about them
 export async function subscribeToPlayback() {
   const { dispatch } = getStore()
+
+  TrackPlayer.addEventListener('playback-error', async ({ code, message }, ...args) => {
+    console.log('!!!! playback-error !!!', code, message, args)
+
+    dispatch(reportPlayerError(code, message))
+  })
 
   TrackPlayer.addEventListener('playback-state', async ({ state }, ...args) => {
     const label = {

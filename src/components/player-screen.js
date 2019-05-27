@@ -24,12 +24,14 @@ export function PlayerScreen({
   isPlaying = false,
   isBuffering = false,
   isHolding = false,
+  playerErrors = [],
   holdingTimeLeft,
   holdingWaitLeft,
   onPressTrackPicker,
   onChangeSettings,
   onChangePosition,
   onPressPlay,
+  onPressAckError = noop,
 }) {
 
   return (
@@ -47,6 +49,8 @@ export function PlayerScreen({
         onChangeSettings={onChangeSettings}
       />
 
+      <PlayerErrors errors={playerErrors} onPressAckError={onPressAckError} />
+
       <PlayerProgress
         style={styles.screenProgress}
         disabled={!isPlayerOk || !track.url}
@@ -62,6 +66,21 @@ export function PlayerScreen({
         onChangePosition={onChangePosition}
       />
 
+    </View>
+  )
+}
+
+export function PlayerErrors({ errors, onPressAckError }) {
+  const errorIndex = errors.findIndex(one => !one.isAck)
+  if (!~errorIndex) return null
+
+  const { code, message } = errors[errorIndex]
+  const handleAck = useCallback(() => onPressAckError(errorIndex), [onPressAckError, errorIndex])
+
+  return (
+    <View style={styles.error}>
+      <Text style={styles.errorText}>{code}: {message}</Text>
+      <PrimaryButton small title='Dismiss' onPress={handleAck} />
     </View>
   )
 }
@@ -253,6 +272,15 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   screenProgress: {
+  },
+
+  error: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  errorText: {
+    maxWidth: '80%',
+    color: 'orangered',
   },
 
   playerSettings: {
