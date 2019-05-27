@@ -1,15 +1,19 @@
 import React from 'react'
 import { Provider } from 'react-redux'
+import { PersistGate } from 'redux-persist/integration/react'
 
-import getStore from './store'
+import { getStore, getPersistor } from './store'
 import AppIndex from './pages'
 
 const store = getStore()
+const persistor = getPersistor()
 
 export function App() {
   return (
     <Provider store={store}>
-      <AppIndex />
+      <PersistGate loading={null} persistor={persistor}>
+        <AppIndex />
+      </PersistGate>
     </Provider>
   )
 }

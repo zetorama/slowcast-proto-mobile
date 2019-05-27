@@ -1,4 +1,6 @@
 import { createStore, combineReducers } from 'redux'
+import { persistStore, persistReducer } from 'redux-persist'
+import storage from 'redux-persist/lib/storage' // defaults to localStorage for web
 
 import nav from './nav'
 import library from './library'
@@ -6,6 +8,15 @@ import player from './player'
 import router from './router'
 
 let store
+
+const persistConfig = {
+  key: 'proto:root',
+  storage,
+}
+
+export function getPersistor() {
+  return persistStore(getStore())
+}
 
 export function getStore() {
   if (!store) {
@@ -27,7 +38,9 @@ export function getRootReducer() {
     // these need to get whole state
     router,
   ]
-  return (state, action) => reducers.reduce((state, fn) => fn(state, action), state)
+  const rootReducer = (state, action) => reducers.reduce((state, fn) => fn(state, action), state)
+
+  return persistReducer(persistConfig, rootReducer)
 }
 
 export function getInitialState() {

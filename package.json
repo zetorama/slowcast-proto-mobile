@@ -21,7 +21,8 @@
     "react-native-swift": "^1.2.2",
     "react-native-track-player": "https://github.com/zetorama/react-native-track-player.git#bac027d",
     "react-redux": "^7.0.3",
-    "redux": "^4.0.1"
+    "redux": "^4.0.1",
+    "redux-persist": "^5.10.0"
   },
   "devDependencies": {
     "@babel/core": "^7.4.4",
