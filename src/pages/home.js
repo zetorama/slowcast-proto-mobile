@@ -1,6 +1,9 @@
 import React, { useCallback } from 'react'
 import { connect } from 'react-redux'
 
+import { BackHandler } from 'react-native'
+import { getPersistor } from '../store'
+
 import { PAGE_TRACKS_ROOT } from '../routes'
 import { gotoPage } from '../store/nav'
 import { updateSettings, togglePlayPause, seekTo, ackPlayerError } from '../store/player'
@@ -25,6 +28,11 @@ export function Home({
   ackPlayerError,
 }) {
   const handlePressTrackPicker = useCallback(() => gotoPage(PAGE_TRACKS_ROOT), [gotoPage, PAGE_TRACKS_ROOT])
+
+  // TEMP: hook to purge store
+  if (playingTrack && playingTrack.title === 'PURGE') {
+    getPersistor().purge().then(() => BackHandler.exitApp()).catch(err => console.log('PURGE failed', err))
+  }
 
   return (
     <AppLayout title='SlowCast Proto'>

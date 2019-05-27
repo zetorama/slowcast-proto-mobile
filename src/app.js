@@ -8,6 +8,7 @@ import AppIndex from './pages'
 const store = getStore()
 const persistor = getPersistor()
 
+
 export function App() {
   return (
     <Provider store={store}>

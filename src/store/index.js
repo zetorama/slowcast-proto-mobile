@@ -8,6 +8,7 @@ import player from './player'
 import router from './router'
 
 let store
+let persistor
 
 const persistConfig = {
   key: 'proto:root',
@@ -15,7 +16,11 @@ const persistConfig = {
 }
 
 export function getPersistor() {
-  return persistStore(getStore())
+  if (!persistor) {
+    persistor = persistStore(getStore())
+  }
+
+  return persistor
 }
 
 export function getStore() {
