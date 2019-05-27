@@ -56,7 +56,8 @@ export async function setPlayingTrack(playingTrack) {
 
   return Q.enqueue(
     () => TrackPlayer.reset(),
-    () => playingTrack ? TrackPlayer.add([playingTrack]) : {},
+    () => playingTrack ? TrackPlayer.add([playingTrack]) : undefined,
+    () => playingTrack && playingTrack.progress ? TrackPlayer.seekTo(playingTrack.progress) : undefined,
   )
 }
 

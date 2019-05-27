@@ -231,12 +231,14 @@ const handlePlayingProgress = (state) => {
 }
 
 const handlePlayingReset = (state) => {
-  if (!state.isPlaying) return undefined
+  // if (!state.isPlaying) return undefined
 
   return {
     isPlaying: false,
     isStreamActive: false,
     trackProgress: undefined,
+    holdingTimeLeft: 0,
+    holdingWaitLeft: (state.playingSettings.talkTime * 60),
   }
 }
 

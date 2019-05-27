@@ -24,6 +24,7 @@ export const TRACK_EDIT = 'slowcast/library/TRACK_EDIT'
 export const TRACK_DELETE = 'slowcast/library/TRACK_DELETE'
 export const TRACK_SET_EDITING = 'slowcast/library/TRACK_SET_EDITING'
 export const TRACK_UPDATE_EDITING = 'slowcast/library/TRACK_UPDATE_EDITING'
+export const TRACK_KEEP_PROGRESS = 'slowcast/library/TRACK_KEEP_PROGRESS'
 export const TRACK_SAVE_EDITING = 'slowcast/library/TRACK_SAVE_EDITING'
 
 // Reducer
@@ -56,6 +57,20 @@ export default function reducer(state = reducer.getInitialState(), action) {
         ...state,
         tracksRoot,
         editingTrack: editingTrack && editingTrack.id === payload.id ? undefined : editingTrack,
+      }
+    }
+
+    case TRACK_KEEP_PROGRESS: {
+      const { id, progress } = payload
+      const { tracksRoot } = state
+      const track = tracksRoot.find(matcherById(id))
+      if (!track) {
+        throw new Error(`Cannot keep progress of track with unknown id ${payload.id}`)
+      }
+
+      return {
+        ...state,
+        tracksRoot: tracksRoot.map(one => one.id !== id ? one : { ...track, progress }),
       }
     }
 
@@ -111,6 +126,11 @@ export const editTrack = ({ id }) => ({
 export const deleteTrack = ({ id }) => ({
   type: TRACK_DELETE,
   payload: { id },
+})
+
+export const keepTrackProgress = (id, progress) => ({
+  type: TRACK_KEEP_PROGRESS,
+  payload: { id, progress },
 })
 
 export const setEditingTrack = (editingTrack = {}) => ({

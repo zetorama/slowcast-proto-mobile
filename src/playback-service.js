@@ -17,6 +17,10 @@ import {
   reportPlayerError,
 } from './store/player'
 
+import {
+  keepTrackProgress,
+} from './store/library'
+
 import getStore from './store'
 
 const PROGRESS_UPDATE_EVERY_MS = 999
@@ -152,7 +156,7 @@ const toggleProgressWatcher = (isOn) => {
 }
 
 const putProgressToStore = async () => {
-  const { dispatch } = getStore()
+  const { dispatch, getState } = getStore()
 
   const [duration, position, bufferedPosition] = await Promise.all([
     await TrackPlayer.getDuration(),
@@ -164,4 +168,10 @@ const putProgressToStore = async () => {
   const playDuration = playingSinceTs ? (new Date() - playingSinceTs) / 1000 : undefined
 
   dispatch(updateTrackProgress({ playDuration, duration, position, bufferedPosition }))
+
+  // TODO: find a better place for this!
+  const { player: { isStreamActive, playingTrack } } = getState()
+  if (isStreamActive && playingTrack) {
+    dispatch(keepTrackProgress(playingTrack.id, position))
+  }
 }
