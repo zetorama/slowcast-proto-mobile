@@ -7,6 +7,7 @@
     "android": "yarn emulate:android & yarn start:android",
     "start:android": "react-native run-android && react-native log-android",
     "emulate:android": "emulator -avd Nexus_5X_API_28_x86 -netdelay none -netspeed full",
+    "build:android": "cd android && ./gradlew assembleRelease",
     "test": "jest"
   },
   "rnpm": {
