@@ -1,16 +1,51 @@
 [
   {
-    "__src__": "http://songexploder.net/u2",
+    "__src__": "http://dearhankandjohn.libsyn.com/143-eleven-peas",
     "id": 1,
-    "title": "EPISODE 42: U2",
-    "artist": "Song Exploder",
-    "url": "https://dts.podtrac.com/redirect.mp3/dovetail.prxu.org/song-exploder/957d8cb0-ca64-4d1a-b761-63408a077009/SongExploder42-U2-DT.mp3"
+    "title": "143 - Eleven Peas",
+    "artist": "Dear Hank and John",
+    "url": "https://www.podtrac.com/pts/redirect.mp3/audio.wnyc.org/dear-hank-john/dear-hank-john060418.mp3"
+  },
+  {
+    "__src__": "https://www.lorepodcast.com/episodes",
+    "id": 2,
+    "title": "EPISODE 106: THE COLLECTION",
+    "artist": "Lore",
+    "url": "https://traffic.megaphone.fm/CAD2341495079.mp3"
+  },
+  {
+    "__src__": "https://www.lorepodcast.com/episodes?offset=1430739202689",
+    "id": 3,
+    "title": "EPISODE 4: DINNER AT THE AFTERGLOW",
+    "artist": "Lore",
+    "url": "https://traffic.megaphone.fm/CAD2955527409.mp3"
   },
   {
     "__src__": "https://kdicast.com/e/252-devgamm-i-poslednie-novosti/",
-    "id": 2,
+    "id": 4,
     "title": "252. DevGAMM и последние новости",
     "artist": "Как Делают Игры",
-    "url": "http://www.podtrac.com/pts/redirect.mp3/galyonkin.com/wp-content/podcast/Galyonkin-S07E252.mp3"
+    "url": "https://www.podtrac.com/pts/redirect.mp3/galyonkin.com/wp-content/podcast/Galyonkin-S07E252.mp3"
+  },
+  {
+    "__src__": "https://kdicast.com/e/232-razrabotka-i-izdanie-graveyard-keeper/",
+    "id": 5,
+    "title": "232. РАЗРАБОТКА И ИЗДАНИЕ GRAVEYARD KEEPER",
+    "artist": "Как Делают Игры",
+    "url": "https://www.podtrac.com/pts/redirect.mp3/galyonkin.com/wp-content/podcast/Galyonkin-S07E232.mp3"
+  },
+  {
+    "__src__": "https://kdicast.com/e/253-pro-game-jams/",
+    "id": 6,
+    "title": "253. ПРО GAME JAMS",
+    "artist": "Как Делают Игры",
+    "url": "https://www.podtrac.com/pts/redirect.mp3/galyonkin.com/wp-content/podcast/Galyonkin-S07E253.mp3"
+  },
+  {
+    "__src__": "https://www.earwolf.com/episode/sky-captain-and-the-world-of-tomorrow-live/",
+    "id": 7,
+    "title": "189. Sky Captain and the World of Tomorrow: LIVE!",
+    "artist": "HOW DID THIS GET MADE?",
+    "url": "https://rss.art19.com/episodes/ce1f96b2-d591-4bb6-9a4d-f7e3a6ae2f5c.mp3"
   }
 ]

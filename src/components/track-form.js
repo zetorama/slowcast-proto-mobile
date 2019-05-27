@@ -17,7 +17,7 @@ export function TrackForm({ style, track = {}, onTrackUpdate = noop, children })
       <View style={styles.formFieldset}>
         <TextField
           label='URL'
-          placeholder='Path to mp3'
+          placeholder='Path to mp3 (HTTPS!)'
           value={String(track.url || '')}
           onChangeText={handleChangeUrl}
         />
