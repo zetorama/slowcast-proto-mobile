@@ -1,4 +1,5 @@
 import TrackPlayer from 'react-native-track-player'
+import BackgroundTimer from 'react-native-background-timer'
 
 import {
   isPlayerAlive,
@@ -143,13 +144,13 @@ let playingSinceTs
 let progressWatcherTid
 const toggleProgressWatcher = (isOn) => {
   if (!isOn && progressWatcherTid) {
-    clearInterval(progressWatcherTid)
+    BackgroundTimer.clearInterval(progressWatcherTid)
     progressWatcherTid = null
     playingSinceTs = null
   }
 
   if (isOn && !progressWatcherTid) {
-    progressWatcherTid = setInterval(putProgressToStore, PROGRESS_UPDATE_EVERY_MS)
+    progressWatcherTid = BackgroundTimer.setInterval(putProgressToStore, PROGRESS_UPDATE_EVERY_MS)
     playingSinceTs = new Date()
     putProgressToStore()
   }
