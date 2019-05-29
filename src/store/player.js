@@ -1,6 +1,9 @@
 import TrackPlayer from 'react-native-track-player'
 // NOTE: structure based on https://github.com/erikras/ducks-modular-redux
 
+// Multiplier for talk/hold time
+const SETTINGS_TIME_COEFF_NORMAL = 60 // treat as minutes
+
 // Default state (thanks to hoisting, keeping it on top for a quick reference)
 reducer.getInitialState = () => ({
   isReady: false,
@@ -15,9 +18,8 @@ reducer.getInitialState = () => ({
   //   position: 0,
   //   bufferedPosition: 0,
   // },
-  isStreamActive: false, // derivative from `holdingSinceTs > -1`
-  holdingSinceTs: -1, // UNIX timestamp, ms
-  holdPosition: 0,
+  isStreamActive: false,
+  switchedStreamAt: null, // UNIX timestamp, ms
   holdingTimeLeft: 0, // seconds
   holdingWaitLeft: 0, // seconds
   requestPosition: -1, // seconds
@@ -75,6 +77,7 @@ export default function reducer(state = reducer.getInitialState(), action) {
         ...state,
         isPlaying,
         isStreamActive: isPlaying,
+        switchedStreamAt: new Date(),
       }
     }
 
@@ -83,6 +86,7 @@ export default function reducer(state = reducer.getInitialState(), action) {
         ...state,
         isPlaying: !state.isPlaying,
         isStreamActive: !state.isPlaying,
+        switchedStreamAt: new Date(),
       }
     }
 
@@ -116,19 +120,15 @@ export default function reducer(state = reducer.getInitialState(), action) {
 
     case REQUEST_TRACK_POSITION: {
       const { requestPosition, isStreamActive } = payload
-      if (requestPosition === state.requestPosition && !(isStreamActive && !state.isStreamActive)) return state
-
-      const { position = 0 } = state.trackProgress || {}
+      const isSwitching = typeof isStreamActive === 'boolean' && isStreamActive !== state.isStreamActive
+      if (requestPosition === state.requestPosition && !(isSwitching && isStreamActive)) return state
 
       return {
         ...state,
         requestPosition,
-        // shift on the same amount, that progress is gonna change
-        holdPosition: typeof isStreamActive === 'boolean'
-          ? requestPosition
-          : state.holdPosition + (requestPosition - position),
         // switch stream if requested
-        isStreamActive: typeof isStreamActive === 'boolean' ? isStreamActive : state.isStreamActive,
+        isStreamActive: isSwitching ? isStreamActive : state.isStreamActive,
+        switchedStreamAt: isSwitching ? new Date() : state.switchedStreamAt,
       }
     }
 
@@ -191,26 +191,22 @@ const handlePlayingProgress = (state) => {
 
   const {
     isStreamActive,
-    holdPosition,
-    holdingSinceTs,
-    trackProgress: {
-      position,
-    } = {},
+    switchedStreamAt,
     playingSettings: {
       talkTime, // min
       holdTime, // min
     } = {},
   } = state
 
-  const holdingTimeLeft = holdingSinceTs > 1 ? (holdTime * 60) - (new Date() - holdingSinceTs) / 1000 : 0
-  const holdingWaitLeft = holdPosition + (talkTime * 60) - position
+  const timeSinceSwitch = new Date() - switchedStreamAt
+  const holdingTimeLeft = isStreamActive ? 0 : holdTime * SETTINGS_TIME_COEFF_NORMAL - timeSinceSwitch / 1000
+  const holdingWaitLeft = isStreamActive ? talkTime * SETTINGS_TIME_COEFF_NORMAL - timeSinceSwitch / 1000 : 0
 
   if (isStreamActive && holdingWaitLeft < 0) {
     return {
       isStreamActive: false,
-      holdPosition: position,
-      holdingSinceTs: new Date(),
-      holdingTimeLeft: (holdTime * 60),
+      switchedStreamAt: new Date(),
+      holdingTimeLeft: (holdTime * SETTINGS_TIME_COEFF_NORMAL),
       holdingWaitLeft: 0,
     }
   }
@@ -218,8 +214,9 @@ const handlePlayingProgress = (state) => {
   if (!isStreamActive && holdingTimeLeft < 0) {
     return {
       isStreamActive: true,
+      switchedStreamAt: new Date(),
       holdingTimeLeft: 0,
-      holdingWaitLeft: (talkTime * 60),
+      holdingWaitLeft: (talkTime * SETTINGS_TIME_COEFF_NORMAL),
 
     }
   }
@@ -238,7 +235,7 @@ const handlePlayingReset = (state) => {
     isStreamActive: false,
     trackProgress: undefined,
     holdingTimeLeft: 0,
-    holdingWaitLeft: (state.playingSettings.talkTime * 60),
+    holdingWaitLeft: (state.playingSettings.talkTime * SETTINGS_TIME_COEFF_NORMAL),
   }
 }
 
