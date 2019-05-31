@@ -67,7 +67,7 @@ export default function reducer(state = reducer.getInitialState(), action) {
       return isReady === state.isReady ? state : {
         ...state,
         isReady,
-        ...handlePlayingReset(state),
+        ..._handlePlayingReset(state),
       }
     }
 
@@ -104,7 +104,7 @@ export default function reducer(state = reducer.getInitialState(), action) {
       return playingTrack === state.playingTrack ? state : {
         ...state,
         playingTrack,
-        ...handlePlayingReset(state),
+        ..._handlePlayingReset(state),
       }
     }
 
@@ -114,7 +114,7 @@ export default function reducer(state = reducer.getInitialState(), action) {
       return {
         ...state,
         playingTrack: undefined,
-        ...handlePlayingReset(state),
+        ..._handlePlayingReset(state),
       }
     }
 
@@ -150,6 +150,10 @@ export default function reducer(state = reducer.getInitialState(), action) {
       return {
         ...state,
         playerErrors,
+
+        // also stop playback (basically, same as SET_READY = false)
+        isReady: false,
+        ..._handlePlayingReset(state),
       }
     }
 
@@ -176,7 +180,7 @@ export default function reducer(state = reducer.getInitialState(), action) {
       return {
         ...state,
         trackProgress: { ...state.trackProgress, ...trackProgress },
-        ...handlePlayingProgress(state),
+        ..._handlePlayingProgress(state),
       }
     }
 
@@ -186,7 +190,7 @@ export default function reducer(state = reducer.getInitialState(), action) {
 }
 
 // Helpers
-const handlePlayingProgress = (state) => {
+const _handlePlayingProgress = (state) => {
   if (!state.isPlaying) return undefined
 
   const {
@@ -227,7 +231,7 @@ const handlePlayingProgress = (state) => {
   }
 }
 
-const handlePlayingReset = (state) => {
+export const _handlePlayingReset = (state) => {
   // if (!state.isPlaying) return undefined
 
   return {

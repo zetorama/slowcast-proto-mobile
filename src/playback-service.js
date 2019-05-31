@@ -24,20 +24,20 @@ import {
 
 import getStore from './store'
 
-const PROGRESS_UPDATE_EVERY_MS = 999
+const PROGRESS_UPDATE_EVERY_MS = 1000
 
 // background service for TrackPlayer
 // subscribing here to variis playback updates, and tell store about them
 export async function subscribeToPlayback() {
   const { dispatch } = getStore()
 
-  TrackPlayer.addEventListener('playback-error', async ({ code, message }, ...args) => {
-    console.log('!!!! playback-error !!!', code, message, args)
+  TrackPlayer.addEventListener('playback-error', async ({ code, message }) => {
+    console.log('!!!! playback-error !!!', code, message)
 
     dispatch(reportPlayerError(code, message))
   })
 
-  TrackPlayer.addEventListener('playback-state', async ({ state }, ...args) => {
+  TrackPlayer.addEventListener('playback-state', async ({ state }) => {
     const label = {
       [TrackPlayer.STATE_NONE]: 'STATE_NONE',
       [TrackPlayer.STATE_READY]: 'STATE_READY',
@@ -47,28 +47,23 @@ export async function subscribeToPlayback() {
       [TrackPlayer.STATE_BUFFERING]: 'STATE_BUFFERING',
     }
 
-    console.log('!!!! playback-state !!!', label[state], args)
+    console.log('!!!! playback-state !!!', label[state])
 
     dispatch(setPlayerState(state))
   })
 
-  TrackPlayer.addEventListener('remote-play', async (...args) => {
-    console.log('!!!! remote-play !!!', args)
+  TrackPlayer.addEventListener('remote-play', async () => {
+    console.log('!!!! remote-play !!!')
     dispatch(setPlaying(true))
   })
 
-  TrackPlayer.addEventListener('remote-play', async (...args) => {
-    console.log('!!!! remote-play !!!', args)
-    dispatch(setPlaying(true))
-  })
-
-  TrackPlayer.addEventListener('remote-pause', async (...args) => {
-    console.log('!!!! remote-pause !!!', args)
+  TrackPlayer.addEventListener('remote-pause', async () => {
+    console.log('!!!! remote-pause !!!')
     dispatch(setPlaying(false))
   })
 
-  TrackPlayer.addEventListener('remote-stop', async (...args) => {
-    console.log('!!!! remote-stop !!!', args)
+  TrackPlayer.addEventListener('remote-stop', async () => {
+    console.log('!!!! remote-stop !!!')
     dispatch(setReady(false))
   })
 }

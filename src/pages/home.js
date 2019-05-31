@@ -29,11 +29,6 @@ export function Home({
 }) {
   const handlePressTrackPicker = useCallback(() => gotoPage(PAGE_TRACKS_ROOT), [gotoPage, PAGE_TRACKS_ROOT])
 
-  // TEMP: hook to purge store
-  if (playingTrack && playingTrack.title === 'PURGE') {
-    getPersistor().purge().then(() => BackHandler.exitApp()).catch(err => console.log('PURGE failed', err))
-  }
-
   return (
     <AppLayout title='SlowCast Proto'>
       <PlayerScreen

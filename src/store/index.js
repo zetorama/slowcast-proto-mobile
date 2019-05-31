@@ -5,6 +5,7 @@ import storage from 'redux-persist/lib/storage' // defaults to localStorage for 
 import nav from './nav'
 import library from './library'
 import player from './player'
+import libraryPlayerSync from './library-player-sync'
 import router from './router'
 
 let store
@@ -41,6 +42,7 @@ export function getRootReducer() {
       player,
     }),
     // these need to get whole state
+    libraryPlayerSync,
     router,
   ]
   const rootReducer = (state, action) => reducers.reduce((state, fn) => fn(state, action), state)
