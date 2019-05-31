@@ -66,6 +66,20 @@ export async function subscribeToPlayback() {
     console.log('!!!! remote-stop !!!')
     dispatch(setReady(false))
   })
+
+  TrackPlayer.addEventListener('remote-duck', async (flags) => {
+    console.log('!!!! remote-duck !!!', flags)
+    if (flags.permanent) {
+      // somebody else gained the audio focus :(
+      dispatch(setReady(false))
+    } else if (flags.paused || flags.ducking) {
+      // as we don't want to interfere with others, just pause
+      dispatch(setPlaying(false))
+    } else {
+      // otherwise, consider this is "stop ducking", so resume
+      dispatch(setPlaying(true))
+    }
+  })
 }
 
 // basically, a player's operator
