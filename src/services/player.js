@@ -1,5 +1,6 @@
 import TrackPlayer from 'react-native-track-player'
 import createQueue from '../utils/queue'
+import animate from '../utils/animate'
 
 // All player API calls should use shared Q
 const Q = createQueue()
@@ -83,5 +84,54 @@ export async function seekTo(position) {
   return Q.enqueue(
     () => TrackPlayer.seekTo(position),
   )
+
+}
+
+let volumeAnimation = null
+export async function changeVolume({ level, from = null, fadeTime = 0 }) {
+  volumeAnimation && volumeAnimation.cancel()
+
+  if (!fadeTime) {
+    return Q.enqueue(
+      () => TrackPlayer.setVolume(level),
+    )
+  }
+
+  if (from == null) {
+    await Q.enqueue(
+      async () => (from = await TrackPlayer.getVolume()),
+    )
+  }
+
+  if (from === level) {
+    return Q.enqueue(
+      () => TrackPlayer.setVolume(level),
+    )
+  }
+
+  return Q.enqueue(
+    () => {
+      const steps = Math.round(fadeTime / 100)
+      const speed = (level - from) / fadeTime
+      let current = from
+      volumeAnimation = animate(fadeTime, steps, async (dt) => {
+        current += speed * dt
+        return TrackPlayer.setVolume(Math.max(0, Math.min(1, current)))
+      })
+
+      return volumeAnimation.then(
+        () => {
+          volumeAnimation = null
+          return TrackPlayer.setVolume(level)
+        },
+        (err) => {
+          if (err !== 'cancel') {
+            console.error('Cannot animate volume', err)
+          }
+        }
+      )
+    }
+  )
+
 
 }

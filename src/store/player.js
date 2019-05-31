@@ -1,6 +1,9 @@
 import TrackPlayer from 'react-native-track-player'
 // NOTE: structure based on https://github.com/erikras/ducks-modular-redux
 
+// These are internal for now
+const SETTINGS_TIME_FADE_IN = 2000 // ms
+const SETTINGS_TIME_FADE_OUT = 2000 // ms
 // Multiplier for talk/hold time
 const SETTINGS_TIME_COEFF_NORMAL = 60 // treat as minutes
 const SETTINGS_TIME_COEFF_PORTION = 1 // treat as seconds
@@ -11,6 +14,7 @@ reducer.getInitialState = () => ({
   isPlayerOk: true,
   isBuffering: false,
   isPlaying: false,
+  volume: 1, // range from 0 to 1
   playingTrack: undefined,
   trackProgress: undefined,
   // trackProgress: {
@@ -23,7 +27,14 @@ reducer.getInitialState = () => ({
   switchedStreamAt: null, // UNIX timestamp, ms
   holdingTimeLeft: 0, // seconds
   holdingWaitLeft: 0, // seconds
+
   requestPosition: -1, // seconds
+  requestVolume: undefined,
+  // requestVolume: {
+  //   level: 1,
+  //   from: 0.5,
+  //   fadeTime: 2000, // ms
+  // },
 
   playingSettings: {
     // currentMode: 'timings',
@@ -213,6 +224,8 @@ const _handlePlayingProgress = (state) => {
   const holdingTimeLeft = isStreamActive ? 0 : holdTime * SETTINGS_TIME_COEFF_NORMAL - timeSinceSwitch / 1000
   const holdingWaitLeft = isStreamActive ? talkTime * SETTINGS_TIME_COEFF_NORMAL - timeSinceSwitch / 1000 : 0
 
+  const recur = recurTime ? recurTime * SETTINGS_TIME_COEFF_PORTION : SETTINGS_TIME_FADE_OUT
+
   if (isStreamActive && holdingWaitLeft < 0) {
     // Put on HOLD
     return {
@@ -221,9 +234,12 @@ const _handlePlayingProgress = (state) => {
       holdingTimeLeft: (holdTime * SETTINGS_TIME_COEFF_NORMAL),
       holdingWaitLeft: 0,
       // roll back a little, so it'd be easier to get back to what's being discussed
-      requestPosition: recurTime && ~position
-        ? Math.max(0, position - recurTime * SETTINGS_TIME_COEFF_PORTION)
-        : state.requestPosition,
+      requestPosition: ~position ? Math.max(0, position - recur) : state.requestPosition,
+      requestVolume: {
+        level: .2,
+        from: state.volume,
+        fadeTime: SETTINGS_TIME_FADE_OUT,
+      },
     }
   }
 
@@ -234,7 +250,13 @@ const _handlePlayingProgress = (state) => {
       switchedStreamAt: new Date(),
       holdingTimeLeft: 0,
       holdingWaitLeft: (talkTime * SETTINGS_TIME_COEFF_NORMAL),
-
+      requestVolume: !recurTime ? undefined : {
+        level: state.volume,
+        from: .2,
+        fadeTime: SETTINGS_TIME_FADE_IN,
+        // special flag to change volume AFTER processing other changes (so, it'd start playing first)
+        isAfterMode: true,
+      },
     }
   }
 

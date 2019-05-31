@@ -8,6 +8,7 @@ import {
   setPlayingTrack,
   togglePlayPause,
   seekTo,
+  changeVolume,
 } from './services/player'
 
 import {
@@ -85,22 +86,37 @@ export async function subscribeToPlayback() {
 // basically, a player's operator
 // converts declarative store updates into imperative player calls
 export function subscribeToStore() {
-  const { dispatch, subscribe } = getStore()
+  const { subscribe } = getStore()
   let {
     isReady,
     isPlaying,
     isStreamActive,
     playingTrack,
     requestPosition,
+    requestVolume,
   } = getPlayerState()
 
   return subscribe(() => {
     const state = getPlayerState()
-    // NOTE: the order of operations might be important for now
+    // NOTE: the order of operations might be important for now, because of internal queue
     // e.g. handling `isReady` is supposed to be the very first operation
+    const afterAll = []
+
     if (isReady !== state.isReady) {
       isReady = state.isReady
       isReady ? preparePlayer() : discardPlayer()
+    }
+
+    if (requestVolume !== state.requestVolume) {
+      requestVolume = state.requestVolume
+
+      if (isPlayerAlive() && isPlaying && requestVolume && requestVolume.level) {
+        if (requestVolume.isAfterMode) {
+          afterAll.push(() => changeVolume(requestVolume))
+        } else {
+          changeVolume(requestVolume)
+        }
+      }
     }
 
     if (playingTrack !== state.playingTrack) {
@@ -114,6 +130,12 @@ export function subscribeToStore() {
       isPlaying = state.isPlaying
       if (!isPlayerAlive()) restorePlayer()
 
+      if (isPlaying) {
+        // always hard restore current volume
+        // (well, just in case — to restore from any volume animations side-effects)
+        changeVolume({level: state.volume})
+      }
+
       toggleProgressWatcher(isPlaying)
     }
 
@@ -126,13 +148,17 @@ export function subscribeToStore() {
 
     if (requestPosition !== state.requestPosition) {
       requestPosition = state.requestPosition
-      if (!isPlayerAlive()) restorePlayer()
 
       if (requestPosition >= 0) {
+        if (!isPlayerAlive()) restorePlayer()
+
         seekTo(requestPosition)
       }
     }
 
+    // Well, kinda hook to run some API at the later stage
+    // TODO: re-think, refactor, maybe add weight to queue?
+    afterAll.forEach(fn => fn())
   })
 }
 
