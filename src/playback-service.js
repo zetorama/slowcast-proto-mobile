@@ -128,10 +128,10 @@ export function subscribeToStore() {
       requestPosition = state.requestPosition
       if (!isPlayerAlive()) restorePlayer()
 
-      seekTo(requestPosition)
+      if (requestPosition >= 0) {
+        seekTo(requestPosition)
+      }
     }
-
-    console.log('==========================', isPlaying, isStreamActive)
 
   })
 }

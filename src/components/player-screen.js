@@ -217,7 +217,7 @@ export function PlayerProgress({
 export function PlayerSettings({ style, settings, onChangeSettings = noop }) {
   const handleChangeTalkTime = useCallback(talkTime => onChangeSettings({ talkTime }), [onChangeSettings])
   const handleChangeHoldTime = useCallback(holdTime => onChangeSettings({ holdTime }), [onChangeSettings])
-  const handleChangeFadeTime = useCallback(fadeTime => onChangeSettings({ fadeTime }), [onChangeSettings])
+  const handleChangeRecurTime = useCallback(recurTime => onChangeSettings({ recurTime }), [onChangeSettings])
 
   return (
     <View style={StyleSheet.flatten([styles.playerSettings, style])}>
@@ -232,27 +232,26 @@ export function PlayerSettings({ style, settings, onChangeSettings = noop }) {
           fieldStyle={styles.rowField}
           style={styles.settingInput}
           label='TALK, min'
-          value={settings.talkTime}
-          min={0}
+          value={settings.talkTime || 0}
+          min={1}
           onPressSpinner={handleChangeTalkTime}
         />
         <SpinnerField
           fieldStyle={styles.rowField}
           style={styles.settingInput}
           label='HOLD, min'
-          value={settings.holdTime}
-          min={0}
+          value={settings.holdTime || 0}
+          min={1}
           onPressSpinner={handleChangeHoldTime}
         />
         <SpinnerField
-          disabled={true}
           fieldStyle={styles.rowField}
           style={styles.settingInput}
-          label='FADE, sec'
-          value={settings.fadeTime}
+          label='RECUR, sec'
+          value={settings.recurTime || 0}
           min={0}
           step={5}
-          onPressSpinner={handleChangeFadeTime}
+          onPressSpinner={handleChangeRecurTime}
         />
       </View>
 

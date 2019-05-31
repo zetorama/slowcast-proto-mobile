@@ -3,6 +3,7 @@ import TrackPlayer from 'react-native-track-player'
 
 // Multiplier for talk/hold time
 const SETTINGS_TIME_COEFF_NORMAL = 60 // treat as minutes
+const SETTINGS_TIME_COEFF_PORTION = 1 // treat as seconds
 
 // Default state (thanks to hoisting, keeping it on top for a quick reference)
 reducer.getInitialState = () => ({
@@ -28,15 +29,16 @@ reducer.getInitialState = () => ({
     // currentMode: 'timings',
     talkTime: 10,
     holdTime: 10,
-    fadeTime: 10,
+    recurTime: 10,
   },
 
+  playerErrors: [],
   // playerErrors: [{
   //   code: 123,
   //   message: 'error',
   //   isAck: false,
   // }],
-  playerErrors: [],
+
   // playingChapters: {
   //   currentMark: 0,
   //   marks: [],
@@ -199,6 +201,11 @@ const _handlePlayingProgress = (state) => {
     playingSettings: {
       talkTime, // min
       holdTime, // min
+      recurTime, // sec
+    } = {},
+    trackProgress: {
+      position = -1, // sec
+      // duration = -1, // sec
     } = {},
   } = state
 
@@ -207,15 +214,21 @@ const _handlePlayingProgress = (state) => {
   const holdingWaitLeft = isStreamActive ? talkTime * SETTINGS_TIME_COEFF_NORMAL - timeSinceSwitch / 1000 : 0
 
   if (isStreamActive && holdingWaitLeft < 0) {
+    // Put on HOLD
     return {
       isStreamActive: false,
       switchedStreamAt: new Date(),
       holdingTimeLeft: (holdTime * SETTINGS_TIME_COEFF_NORMAL),
       holdingWaitLeft: 0,
+      // roll back a little, so it'd be easier to get back to what's being discussed
+      requestPosition: recurTime && ~position
+        ? Math.max(0, position - recurTime * SETTINGS_TIME_COEFF_PORTION)
+        : state.requestPosition,
     }
   }
 
   if (!isStreamActive && holdingTimeLeft < 0) {
+    // Let's TALK
     return {
       isStreamActive: true,
       switchedStreamAt: new Date(),
@@ -275,7 +288,7 @@ export const clearTrack = () => ({
 export const seekTo = (requestPosition, isStreamActive = undefined) => ({
   type: REQUEST_TRACK_POSITION,
   payload: {
-    requestPosition: Math.max(0, requestPosition),
+    requestPosition,
     isStreamActive,
   },
 })
